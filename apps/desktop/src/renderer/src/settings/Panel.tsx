@@ -37,7 +37,10 @@ export function Panel({
 export function Inset({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
-      className={cn('rounded-md bg-maple-inset shadow-[inset_0_1px_3px_rgba(0,0,0,0.55)] ring-1 ring-white/[0.06]', className)}
+      className={cn(
+        'rounded-md bg-maple-inset shadow-[inset_0_1px_3px_rgba(0,0,0,0.55)] ring-1 ring-white/[0.06]',
+        className
+      )}
       {...props}
     />
   )

@@ -1,6 +1,6 @@
 import { dirname, join, sep } from 'node:path'
-import { createWorker, OEM, PSM, type Worker, type WorkerParams } from 'tesseract.js'
 import type { RegionKey } from '@shared/types'
+import { createWorker, OEM, PSM, type Worker, type WorkerParams } from 'tesseract.js'
 
 /**
  * Packaged builds keep tesseract (which spawns a worker_thread from its own folder) unpacked
@@ -44,7 +44,7 @@ export class OcrEngine {
   private queue: Promise<unknown> = Promise.resolve()
   private pending = 0
   private lastUsed = Date.now()
-  private idleTimer = setInterval(() => this.reapIfIdle(), 15_000)
+  private readonly idleTimer = setInterval(() => this.reapIfIdle(), 15_000)
 
   /** Shut the worker down after this long unused (frees ~300 MB); it restarts on the next read. */
   static IDLE_MS = 60_000
@@ -66,7 +66,9 @@ export class OcrEngine {
         gzip: true,
         cacheMethod: 'none'
       })
-      this.worker.catch(() => (this.worker = undefined))
+      this.worker.catch(() => {
+        this.worker = undefined
+      })
       this.kind = undefined
     }
     return this.worker
@@ -88,6 +90,7 @@ export class OcrEngine {
         this.kind = kind
       }
       const { data } = await worker.recognize(png)
+      // biome-ignore lint/suspicious/noUnnecessaryConditions: tesseract.js types promise a string, but an empty page has come back without one.
       return data.text ?? ''
     })
     this.queue = job.catch(() => undefined)

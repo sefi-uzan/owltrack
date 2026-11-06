@@ -1,5 +1,5 @@
-import { contextBridge, ipcRenderer, type IpcRendererEvent } from 'electron'
 import type { Api, Unsubscribe } from '@shared/api'
+import { contextBridge, type IpcRendererEvent, ipcRenderer } from 'electron'
 
 function on<T>(channel: string, cb: (value: T) => void): Unsubscribe {
   const listener = (_e: IpcRendererEvent, value: T): void => cb(value)
@@ -22,8 +22,8 @@ const api: Api = {
 
   openSettings: () => ipcRenderer.send('app:openSettings'),
   resizeOverlay: (w, h) => ipcRenderer.send('overlay:resize', w, h),
-  setOverlayInteractive: (on) => ipcRenderer.send('overlay:interactive', on),
-  setOverlayEditing: (on) => ipcRenderer.send('overlay:editing', on),
+  setOverlayInteractive: (interactive) => ipcRenderer.send('overlay:interactive', interactive),
+  setOverlayEditing: (editing) => ipcRenderer.send('overlay:editing', editing),
 
   captureReady: () => ipcRenderer.send('capture:ready'),
   captureStatus: (s) => ipcRenderer.send('capture:status', s),

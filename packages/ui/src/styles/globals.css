@@ -1,9 +1,9 @@
-@import 'tailwindcss';
-@import 'tw-animate-css';
+@import "tailwindcss";
+@import "tw-animate-css";
 
 /* Tailwind only auto-scans the app's own folder; point it at this package and every app. */
-@source '../components';
-@source '../../../../apps/*/src';
+@source "../components";
+@source "../../../../apps/*/src";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -97,7 +97,7 @@
   }
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif;
+    font-family: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
   }
   .maple-title {
     color: var(--color-maple-gold);

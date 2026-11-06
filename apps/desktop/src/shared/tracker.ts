@@ -1,4 +1,4 @@
-import { newNoticeLines, parseMesoLine, type ExpReading } from './parse'
+import { type ExpReading, newNoticeLines, parseMesoLine } from './parse'
 
 const MIN = 60_000
 
@@ -76,7 +76,7 @@ function consistent(a: number | undefined, b: number | undefined, percent: numbe
 const same = (a: ExpReading, b: ExpReading): boolean => a.exp === b.exp && a.percent === b.percent
 
 /** How long we wait for the level box to confirm a level-up after EXP drops. */
-const LEVEL_WAIT_MS = 4_000
+const LEVEL_WAIT_MS = 4000
 /** A meso notice this many times the typical recent amount is treated as a misread. */
 const MESO_OUTLIER_FACTOR = 6
 /** Meso drops needed before the outlier check kicks in. */
@@ -283,7 +283,7 @@ export class ExpTracker {
   }
 
   private creditLevelUp(from: Accepted, to: Accepted, t: number, bumpLevel: boolean, alreadyAccepted = false): void {
-    const remaining = from.required !== undefined ? Math.max(0, from.required - from.exp) : 0
+    const remaining = from.required === undefined ? 0 : Math.max(0, from.required - from.exp)
     this.exp.add(remaining + to.exp, t)
     this.levelsGained++
     if (bumpLevel && this.level !== undefined) this.level++

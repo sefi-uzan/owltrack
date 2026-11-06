@@ -1,14 +1,14 @@
-import { app } from 'electron'
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import type { SettingsPatch } from '@shared/api'
 import { DEFAULT_SETTINGS, type Settings } from '@shared/types'
+import { app } from 'electron'
 
 /** Tiny JSON settings store in the user-data folder (writes are debounced). */
 export class SettingsStore {
-  private file = join(app.getPath('userData'), 'settings.json')
+  private readonly file = join(app.getPath('userData'), 'settings.json')
   private timer?: NodeJS.Timeout
-  private listeners = new Set<(s: Settings, prev: Settings) => void>()
+  private readonly listeners = new Set<(s: Settings, prev: Settings) => void>()
   value: Settings
 
   constructor() {

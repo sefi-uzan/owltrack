@@ -38,7 +38,7 @@ export function textMask(
 }
 
 export function maskDiff(a: Uint8Array, b: Uint8Array): number {
-  if (a.length !== b.length) return Infinity
+  if (a.length !== b.length) return Number.POSITIVE_INFINITY
   let n = 0
   for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) n++
   return n
@@ -46,7 +46,7 @@ export function maskDiff(a: Uint8Array, b: Uint8Array): number {
 
 /** Pixels that are text in `next` but weren't in `prev`. */
 export function maskGained(next: Uint8Array, prev: Uint8Array): number {
-  if (next.length !== prev.length) return Infinity
+  if (next.length !== prev.length) return Number.POSITIVE_INFINITY
   let n = 0
   for (let i = 0; i < next.length; i++) if (next[i] && !prev[i]) n++
   return n

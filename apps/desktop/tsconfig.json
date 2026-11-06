@@ -1,6 +1,9 @@
 {
   "files": [],
-  "references": [{ "path": "./tsconfig.node.json" }, { "path": "./tsconfig.web.json" }],
+  "references": [
+    { "path": "./tsconfig.node.json" },
+    { "path": "./tsconfig.web.json" }
+  ],
   // Not used by tsc (the referenced projects have their own); the shadcn CLI reads aliases from here.
   "compilerOptions": {
     "paths": {

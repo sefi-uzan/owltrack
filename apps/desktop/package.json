@@ -1,21 +1,20 @@
 {
   "name": "@repo/desktop",
-  "productName": "EXP Tracker",
   "version": "0.1.0",
-  "description": "Always-on-top MapleStory EXP tracker overlay that reads your level, name and EXP from the game window.",
-  "author": "Sefi Uzan",
-  "license": "MIT",
   "private": true,
+  "description": "Always-on-top MapleStory EXP tracker overlay that reads your level, name and EXP from the game window.",
+  "license": "MIT",
+  "author": "Sefi Uzan",
   "main": "./out/main/index.js",
   "scripts": {
-    "dev": "electron-vite dev",
     "build": "electron-vite build",
-    "preview": "electron-vite preview",
-    "typecheck": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json",
-    "test": "vitest run",
-    "icons": "node scripts/build-icons.mjs",
+    "dev": "electron-vite dev",
     "dist": "electron-vite build && electron-builder --win",
-    "dist:dir": "electron-vite build && electron-builder --win --dir"
+    "dist:dir": "electron-vite build && electron-builder --win --dir",
+    "icons": "node scripts/build-icons.mjs",
+    "preview": "electron-vite preview",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json"
   },
   "dependencies": {
     "@tesseract.js-data/eng": "^1.0.0",
@@ -40,5 +39,6 @@
     "typescript": "^7.0.2",
     "vite": "^8.3.6",
     "vitest": "^5.1.0"
-  }
+  },
+  "productName": "EXP Tracker"
 }

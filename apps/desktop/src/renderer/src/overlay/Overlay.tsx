@@ -1,8 +1,8 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { Coins, Move, Pencil, Settings2 } from 'lucide-react'
+import { cn } from '@repo/ui/lib/utils'
 import { compact, duration, grouped, signedCompact } from '@shared/format'
 import type { Settings, TrackerSnapshot } from '@shared/types'
-import { cn } from '@repo/ui/lib/utils'
+import { Coins, Move, Pencil, Settings2 } from 'lucide-react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 
 const api = window.api
 
@@ -25,12 +25,13 @@ function useSettings(): Settings | null {
 }
 
 function LevelBadge({ level }: { level?: number }) {
-  const digits = level !== undefined ? String(level).split('') : ['?', '?']
+  const digits = level === undefined ? ['?', '?'] : String(level).split('')
   return (
     <div className="flex h-8 shrink-0 items-center gap-1 rounded-lg bg-maple-inset px-2 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08),inset_0_1px_3px_rgba(0,0,0,0.5)]">
       <span className="pr-0.5 text-[13px] font-black italic tracking-tight text-white">LV.</span>
       {digits.map((d, i) => (
         <span
+          // biome-ignore lint/suspicious/noArrayIndexKey: digits are positional.
           key={i}
           className="grid h-5.5 w-4 place-items-center rounded-[4px] bg-tile text-[13px] font-black text-white shadow-[inset_0_-2px_0_rgba(0,0,0,0.18)]"
         >
@@ -42,7 +43,7 @@ function LevelBadge({ level }: { level?: number }) {
 }
 
 function ExpBar({ exp, percent }: { exp?: number; percent?: number }) {
-  const width = percent !== undefined ? Math.max(0, Math.min(100, percent)) : 0
+  const width = percent === undefined ? 0 : Math.max(0, Math.min(100, percent))
   return (
     <div className="relative h-8 min-w-0 flex-1 overflow-hidden rounded-lg bg-maple-inset shadow-[inset_0_1px_3px_rgba(0,0,0,0.6)] ring-1 ring-white/[0.08]">
       <div
@@ -52,7 +53,7 @@ function ExpBar({ exp, percent }: { exp?: number; percent?: number }) {
       <div className="relative flex h-full items-center justify-center gap-1.5 px-2 text-[12.5px] font-bold whitespace-nowrap text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.7)]">
         <span className="font-black text-[#ffe36b] italic">EXP</span>
         <span className="tabular-nums">
-          {exp !== undefined ? grouped(exp) : '—'}
+          {exp === undefined ? '—' : grouped(exp)}
           {percent !== undefined && <span className="text-white/85"> [{percent.toFixed(2)}%]</span>}
         </span>
       </div>
@@ -64,7 +65,14 @@ function Stat({ label, value, accent }: { label: string; value: string; accent?:
   return (
     <div className="min-w-0 rounded-md bg-maple-inset px-2.5 py-1.5 shadow-[inset_0_1px_3px_rgba(0,0,0,0.55)] ring-1 ring-white/[0.06]">
       <div className="truncate text-[10px] font-semibold tracking-[0.08em] text-maple-muted uppercase">{label}</div>
-      <div className={cn('truncate text-[19px] leading-tight font-extrabold tabular-nums text-white', accent && 'text-maple-gold')}>{value}</div>
+      <div
+        className={cn(
+          'truncate text-[19px] leading-tight font-extrabold tabular-nums text-white',
+          accent && 'text-maple-gold'
+        )}
+      >
+        {value}
+      </div>
     </div>
   )
 }
@@ -88,7 +96,7 @@ function CharacterName({ snap, settings }: { snap: TrackerSnapshot | null; setti
     setEditing(false)
     api.setOverlayEditing(false)
     api.setOverlayInteractive(false)
-    if (!save || !detected || !settings) return
+    if (!(save && detected && settings)) return
     const aliases = { ...settings.nameAliases }
     const v = value.trim()
     if (!v || v === detected) delete aliases[detected]
@@ -117,6 +125,8 @@ function CharacterName({ snap, settings }: { snap: TrackerSnapshot | null; setti
   }
 
   return (
+    // biome-ignore lint/a11y/noStaticElementInteractions: hover only toggles click-through so the edit button can be reached.
+    // biome-ignore lint/a11y/noNoninteractiveElementInteractions: same as above.
     <span
       className="group ml-auto flex min-w-0 items-center gap-1"
       style={noDrag}
@@ -125,6 +135,7 @@ function CharacterName({ snap, settings }: { snap: TrackerSnapshot | null; setti
     >
       {editable && (
         <button
+          type="button"
           className="grid size-4.5 shrink-0 place-items-center rounded opacity-0 transition-opacity group-hover:opacity-100 hover:bg-white/20"
           title={`Read as “${detected}”. Click to fix the spelling.`}
           onClick={() => {
@@ -177,7 +188,11 @@ export function Overlay() {
   const message = snap ? statusLine(snap) : 'Starting…'
 
   return (
-    <div ref={ref} className="w-[340px] p-1.5" style={unlocked ? ({ WebkitAppRegion: 'drag' } as React.CSSProperties) : undefined}>
+    <div
+      ref={ref}
+      className="w-[340px] p-1.5"
+      style={unlocked ? ({ WebkitAppRegion: 'drag' } as React.CSSProperties) : undefined}
+    >
       <div
         className={cn(
           'overflow-hidden rounded-[10px] border border-maple-edge bg-maple-panel/95 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.09),0_6px_18px_rgba(0,0,0,0.45)]',
@@ -199,6 +214,7 @@ export function Overlay() {
             <>
               <Move className="size-3.5 shrink-0 opacity-80" />
               <button
+                type="button"
                 className="grid size-5 shrink-0 place-items-center rounded hover:bg-white/15"
                 style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
                 onClick={() => api.openSettings()}
@@ -231,7 +247,7 @@ export function Overlay() {
             value={signedCompact(snap?.session)}
           />
           <Stat
-            label={snap?.level !== undefined ? `To Lv. ${snap.level + 1}` : 'To next level'}
+            label={snap?.level === undefined ? 'To next level' : `To Lv. ${snap.level + 1}`}
             value={duration(snap?.etaSeconds)}
           />
         </div>
@@ -240,7 +256,10 @@ export function Overlay() {
           <div className="flex items-center gap-2 border-t border-black/40 bg-black/20 px-3 py-1.5 text-[11px] text-maple-muted">
             <Coins className="size-3.5 shrink-0 text-maple-gold" />
             <span className="font-semibold tracking-[0.08em] uppercase">Mesos</span>
-            <span className="ml-auto font-bold text-maple-gold tabular-nums" title="Approximate: notice lines the OCR can't read cleanly are skipped, so this undercounts">
+            <span
+              className="ml-auto font-bold text-maple-gold tabular-nums"
+              title="Approximate: notice lines the OCR can't read cleanly are skipped, so this undercounts"
+            >
               ≈ +{compact(snap.mesos.session)}
             </span>
             <span className="tabular-nums">· {compact(snap.mesos.ratePerHour)}/h</span>

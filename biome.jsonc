@@ -1,0 +1,104 @@
+{
+  "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+  "extends": [
+    "ultracite/biome/core",
+    "ultracite/biome/react",
+    "ultracite/biome/vitest"
+  ],
+  // Keep the code style the repo already had.
+  "formatter": { "lineWidth": 120 },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "single",
+      "jsxQuoteStyle": "double",
+      "semicolons": "asNeeded",
+      "trailingCommas": "none",
+      "arrowParentheses": "always"
+    }
+  },
+  // Object keys are grouped by meaning (see snapshot() and types.ts), not alphabetically.
+  "assist": {
+    "actions": {
+      "source": {
+        "useSortedKeys": "off",
+        "useSortedInterfaceMembers": "off",
+        "useSortedProperties": "off",
+        "useSortedAttributes": "off"
+      }
+    }
+  },
+  "vcs": { "defaultBranch": "master" },
+  "linter": {
+    "rules": {
+      "style": {
+        // Pixel/bitmap loops and counters read better with ++.
+        "noIncrementDecrement": "off",
+        // One-line `if (x) return y` guards are the house style.
+        "useBlockStatements": "off",
+        // `const x = obj.x` is often clearer than destructuring a single field.
+        "useDestructuring": "off",
+        // Short chained ternaries in JSX are clearer than extracting a helper for each.
+        "noNestedTernary": "off",
+        // `constructor(public templates = {})` and `a = b = 0` resets are fine here.
+        "noParameterProperties": "off",
+        "useConsistentMemberAccessibility": "off",
+        "noMultiAssign": "off",
+        // Index loops over typed arrays in the pixel code are deliberate.
+        "useForOf": "off",
+        // OCR parsing regexes use short positional groups.
+        "useNamedCaptureGroup": "off",
+        // Asserted lookups (DOM roots, typed-array reads) that are guaranteed by construction.
+        "noNonNullAssertion": "off",
+        // React components live in PascalCase files.
+        "useFilenamingConvention": {
+          "level": "error",
+          "options": {
+            "filenameCases": ["kebab-case", "PascalCase", "camelCase"]
+          }
+        }
+      },
+      "complexity": {
+        // `void promise` marks a deliberately un-awaited call.
+        "noVoid": "off",
+        // The OCR/capture hot paths are long on purpose; splitting them would cost clarity and speed.
+        "noExcessiveCognitiveComplexity": "off"
+      },
+      "performance": {
+        // shadcn components use `import * as React`.
+        "noNamespaceImport": "off",
+        // Inline handlers are fine at this app's size; there's no memoised child to break.
+        "noJsxPropsBind": "off",
+        "useTopLevelRegex": "off",
+        // Sequential awaits in loops are intentional (one OCR worker, ordered reads).
+        "noAwaitInLoops": "off"
+      },
+      "correctness": {
+        // Flags the `@shared/*` path alias as an undeclared package; tsc already catches bad imports.
+        "noUndeclaredDependencies": "off",
+        // Frames are data URLs with no intrinsic size known up front.
+        "useImageSize": "off"
+      },
+      "nursery": {
+        // Biome can't read the Tailwind v4 theme, so it sorts custom tokens (text-maple-gold, text-muted-foreground) as unknown classes.
+        "useTailwindSortedClasses": "off"
+      },
+      "suspicious": {
+        // Conditions are booleans/strings/objects; React DOM renders nothing for "".
+        "noLeakedRender": "off",
+        // `(map[k] ??= [])` is the idiomatic get-or-create.
+        "noAssignInExpressions": "off",
+        // Everything runs in Electron's bundled Chromium, so web-platform baseline doesn't apply.
+        "useBaseline": "off"
+      }
+    }
+  },
+  "overrides": [
+    {
+      // Electron main is bundled to CommonJS, where __dirname is the right tool.
+      "includes": ["apps/desktop/src/main/**"],
+      "linter": {
+        "rules": { "correctness": { "noGlobalDirnameFilename": "off" } }
+      }
+    }
+  ]
+}

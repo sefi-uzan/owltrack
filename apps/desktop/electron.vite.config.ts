@@ -1,9 +1,9 @@
 import { resolve } from 'node:path'
-import { defineConfig } from 'electron-vite'
-import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
+import react from '@vitejs/plugin-react'
+import { defineConfig } from 'electron-vite'
 
-const shared = resolve(__dirname, 'src/shared')
+const shared = resolve(import.meta.dirname, 'src/shared')
 
 export default defineConfig({
   main: {
@@ -15,7 +15,7 @@ export default defineConfig({
   renderer: {
     resolve: {
       alias: {
-        '@': resolve(__dirname, 'src/renderer/src'),
+        '@': resolve(import.meta.dirname, 'src/renderer/src'),
         '@shared': shared
       }
     },
@@ -23,9 +23,9 @@ export default defineConfig({
     build: {
       rollupOptions: {
         input: {
-          overlay: resolve(__dirname, 'src/renderer/overlay.html'),
-          settings: resolve(__dirname, 'src/renderer/settings.html'),
-          capture: resolve(__dirname, 'src/renderer/capture.html')
+          overlay: resolve(import.meta.dirname, 'src/renderer/overlay.html'),
+          settings: resolve(import.meta.dirname, 'src/renderer/settings.html'),
+          capture: resolve(import.meta.dirname, 'src/renderer/capture.html')
         }
       }
     }

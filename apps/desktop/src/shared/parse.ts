@@ -13,7 +13,7 @@ export interface NameReading {
   job?: string
 }
 
-const digitsOnly = (s: string): string => s.replace(/\D/g, '')
+const digitsOnly = (s: string): string => s.replace(/\D/gu, '')
 
 export function parseLevel(text: string): number | undefined {
   const d = digitsOnly(text)
@@ -27,8 +27,8 @@ export function parseLevel(text: string): number | undefined {
  * MapleStory always prints two decimals.
  */
 export function parsePercent(raw: string): number | undefined {
-  const cleaned = raw.replace(/\s/g, '')
-  const m = cleaned.match(/^(\d{1,3})[.,](\d{1,2})$/)
+  const cleaned = raw.replace(/\s/gu, '')
+  const m = cleaned.match(/^(\d{1,3})[.,](\d{1,2})$/u)
   let value: number
   if (m) {
     value = Number(`${m[1]}.${m[2].padEnd(2, '0')}`)
@@ -45,16 +45,16 @@ export function parsePercent(raw: string): number | undefined {
  * Thousands separators vary between clients so they're simply stripped.
  */
 export function parseExp(text: string): ExpReading | undefined {
-  const t = text.replace(/[|{]/g, '[').replace(/[}]/g, ']').replace(/\s+/g, ' ').trim()
-  const open = t.search(/[[(]/)
+  const t = text.replace(/[|{]/gu, '[').replace(/[}]/gu, ']').replace(/\s+/gu, ' ').trim()
+  const open = t.search(/[[(]/u)
   if (open <= 0) return parseExpWithoutBracket(t)
   const expDigits = expNumber(t.slice(0, open))
   if (!expDigits || expDigits.length > 13) return undefined
   const exp = Number(expDigits)
   const rest = t.slice(open + 1)
   // The game always prints "dd.dd%"; anything after the two decimals (a misread "%", "]") is noise.
-  const m = rest.match(/^\s*(\d{1,3})\s*[.,]\s*(\d{2})/)
-  const percent = m ? Number(`${m[1]}.${m[2]}`) : parsePercent(rest.replace(/[%\])[].*$/, ''))
+  const m = rest.match(/^\s*(\d{1,3})\s*[.,]\s*(\d{2})/u)
+  const percent = m ? Number(`${m[1]}.${m[2]}`) : parsePercent(rest.replace(/[%\])[].*$/u, ''))
   if (percent === undefined || percent > 100) return undefined
   return { exp, percent }
 }
@@ -66,10 +66,10 @@ export function parseExp(text: string): ExpReading | undefined {
  * rejected rather than guessed.
  */
 function expNumber(raw: string): string | undefined {
-  const s = raw.replace(/[\s']/g, '')
-  if (!/[.,]/.test(s)) return digitsOnly(s) || undefined
-  if (/^\d{1,3}(?:[.,]\d{3})+$/.test(s)) return digitsOnly(s)
-  const m = s.match(/^(\d{1,3}(?:[.,]\d{3})+)\d$/)
+  const s = raw.replace(/[\s']/gu, '')
+  if (!/[.,]/u.test(s)) return digitsOnly(s) || undefined
+  if (/^\d{1,3}(?:[.,]\d{3})+$/u.test(s)) return digitsOnly(s)
+  const m = s.match(/^(\d{1,3}(?:[.,]\d{3})+)\d$/u)
   return m ? digitsOnly(m[1]) : undefined
 }
 
@@ -78,24 +78,24 @@ function expNumber(raw: string): string | undefined {
  * still split it: take the grouped number at the start, skip one junk glyph, read "dd.dd".
  */
 function parseExpWithoutBracket(t: string): ExpReading | undefined {
-  const m = t.match(/^(\d{1,3}(?:[.,]\d{3})+)\D?\d?(\d{1,2})[.,](\d{2})/)
+  const m = t.match(/^(\d{1,3}(?:[.,]\d{3})+)\D?\d?(\d{1,2})[.,](\d{2})/u)
   if (!m) return undefined
   const percent = Number(`${m[2]}.${m[3]}`)
   return percent <= 100 ? { exp: Number(digitsOnly(m[1])), percent } : undefined
 }
 
-const cleanWord =(s: string): string => s.replace(/[^A-Za-z0-9]/g, '')
+const cleanWord = (s: string): string => s.replace(/[^A-Za-z0-9]/gu, '')
 
 /** The name box has two lines: job on top, character name below. */
 export function parseName(text: string): NameReading {
   const lines = text
-    .split(/\r?\n/)
+    .split(/\r?\n/u)
     .map((l) => l.trim())
     .filter((l) => cleanWord(l).length >= 2)
   if (lines.length === 0) return {}
   if (lines.length === 1) return { name: cleanWord(lines[0]) }
-  const job = lines[0].replace(/[^A-Za-z0-9 ]/g, '').trim()
-  return { job: job || undefined, name: cleanWord(lines[lines.length - 1]) }
+  const job = lines[0].replace(/[^A-Za-z0-9 ]/gu, '').trim()
+  return { job: job || undefined, name: cleanWord(lines.at(-1)!) }
 }
 
 /**
@@ -108,8 +108,8 @@ export function parseName(text: string): NameReading {
  */
 export function parseMesoLine(line: string): number | undefined {
   const raw = line.trim()
-  if (!/m[e3]s[oa0]s?\b/i.test(raw)) return undefined
-  const m = raw.match(/\(\s*\+\s*(\d{1,3}(?:,\d{3})+|\d{1,9})\s*\)/)
+  if (!/m[e3]s[oa0]s?\b/iu.test(raw)) return undefined
+  const m = raw.match(/\(\s*\+\s*(\d{1,3}(?:,\d{3})+|\d{1,9})\s*\)/u)
   if (!m) return undefined
   const n = Number(digitsOnly(m[1]))
   return n > 0 ? n : undefined
@@ -117,13 +117,13 @@ export function parseMesoLine(line: string): number | undefined {
 
 /** Normalised form used to compare the same notice line across two OCR passes. */
 export function noticeKey(line: string): string {
-  return line.toLowerCase().replace(/[^a-z0-9+]/g, '')
+  return line.toLowerCase().replace(/[^a-z0-9+]/gu, '')
 }
 
 function similar(a: string, b: string): boolean {
   if (a === b) return true
   // Amounts must match exactly; only the wording may differ by a few characters.
-  if (a.replace(/\D/g, '') !== b.replace(/\D/g, '')) return false
+  if (a.replace(/\D/gu, '') !== b.replace(/\D/gu, '')) return false
   const max = Math.max(a.length, b.length)
   if (max === 0) return true
   return levenshtein(a, b) <= Math.max(1, Math.floor(max * 0.12))

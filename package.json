@@ -1,16 +1,23 @@
 {
   "name": "exp-tracker-monorepo",
   "private": true,
-  "packageManager": "npm@11.19.0",
-  "workspaces": ["apps/*", "packages/*"],
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
-    "dev": "turbo run dev",
     "build": "turbo run build",
-    "typecheck": "turbo run typecheck",
+    "check": "biome check",
+    "dev": "turbo run dev",
+    "dist": "turbo run dist --filter=@repo/desktop",
+    "fix": "biome check --write",
     "test": "turbo run test",
-    "dist": "turbo run dist --filter=@repo/desktop"
+    "typecheck": "turbo run typecheck"
   },
   "devDependencies": {
-    "turbo": "^2.11.10"
-  }
+    "@biomejs/biome": "^2.6.5",
+    "turbo": "^2.11.10",
+    "ultracite": "^8.1.1"
+  },
+  "packageManager": "npm@11.19.0"
 }

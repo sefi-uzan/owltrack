@@ -76,7 +76,12 @@ export function segment(b: Bitmap): { glyphs: Glyph[]; lineTop: number; lineH: n
 }
 
 /** Ink density on a GW×GH grid over the glyph's box, plus its size and vertical position. */
-function features(b: Bitmap, g: { x: number; y: number; w: number; h: number }, lineTop: number, lineH: number): number[] {
+function features(
+  b: Bitmap,
+  g: { x: number; y: number; w: number; h: number },
+  lineTop: number,
+  lineH: number
+): number[] {
   const out: number[] = []
   for (let gy = 0; gy < GH; gy++) {
     for (let gx = 0; gx < GW; gx++) {
@@ -118,13 +123,10 @@ function layout(glyphs: Glyph[], lineH: number): string {
 /** Expected layout of the EXP number + "[" + percent, with or without thousands separators. */
 function expectedLayouts(exp: number, percent: number): string[] {
   const digits = String(exp)
-  const grouped = digits.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+  const grouped = digits.replace(/\B(?=(\d{3})+(?!\d))/gu, ',')
   const [whole] = percent.toFixed(2).split('.')
-  const pct = 'T' + 'T'.repeat(whole.length) + 'sTT' // "[" + "15" + "." + "50"
-  return [
-    grouped.replace(/\d/g, 'T').replace(/,/g, 's') + pct,
-    'T'.repeat(digits.length) + pct
-  ]
+  const pct = `T${'T'.repeat(whole.length)}sTT` // "[" + "15" + "." + "50"
+  return [grouped.replace(/\d/gu, 'T').replace(/,/gu, 's') + pct, 'T'.repeat(digits.length) + pct]
 }
 
 export class GlyphMatcher {
@@ -173,7 +175,7 @@ export class GlyphMatcher {
   learnExp(b: Bitmap, exp: number, percent: number): boolean {
     const { glyphs, lineH } = segment(b)
     const actual = layout(glyphs, lineH)
-    const prefix = expectedLayouts(exp, percent).find((p) => new RegExp(`^${p}T{1,3}$`).test(actual))
+    const prefix = expectedLayouts(exp, percent).find((p) => new RegExp(`^${p}T{1,3}$`, 'u').test(actual))
     if (!prefix) return false
     const labels = [...String(exp), '[', ...percent.toFixed(2).replace('.', '')] as GlyphClass[]
     let changed = false
@@ -204,7 +206,7 @@ export class GlyphMatcher {
       out += cls === 'tail' ? ']' : cls
     }
     // Canonicalise: "66.380[15.50]]" -> "66.380[15.50%]"
-    const m = out.match(/^([\d.]+)\[(\d{1,3})\.(\d{2})\]+$/)
+    const m = out.match(/^([\d.]+)\[(\d{1,3})\.(\d{2})\]+$/u)
     return m ? `${m[1]}[${m[2]}.${m[3]}%]` : undefined
   }
 }

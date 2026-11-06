@@ -1,12 +1,12 @@
-import { BrowserWindow, screen } from 'electron'
 import { join } from 'node:path'
+import { BrowserWindow, screen } from 'electron'
 
 export type Page = 'overlay' | 'settings' | 'capture'
 
 const preload = join(__dirname, '../preload/index.js')
 
 function load(win: BrowserWindow, page: Page): void {
-  const devUrl = process.env['ELECTRON_RENDERER_URL']
+  const devUrl = process.env.ELECTRON_RENDERER_URL
   if (devUrl) void win.loadURL(`${devUrl}/${page}.html`)
   else void win.loadFile(join(__dirname, `../renderer/${page}.html`))
 }

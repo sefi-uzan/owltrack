@@ -12,5 +12,3 @@ declare global {
     readonly readable: ReadableStream<VideoFrame>
   }
 }
-
-export {}

@@ -63,7 +63,7 @@ function resetRegions(): void {
 
 function stop(): void {
   generation++
-  stream?.getTracks().forEach((t) => t.stop())
+  for (const t of stream?.getTracks() ?? []) t.stop()
   stream = null
 }
 
@@ -89,7 +89,7 @@ async function start(src: WindowSourceInfo | null): Promise<void> {
       }
     } as unknown as MediaStreamConstraints)
     if (gen !== generation) {
-      media.getTracks().forEach((t) => t.stop())
+      for (const t of media.getTracks()) t.stop()
       return
     }
     stream = media

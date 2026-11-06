@@ -7,7 +7,7 @@ files:
   - out/**
   - resources/**
   - package.json
-  - '!**/*.map'
+  - "!**/*.map"
 asarUnpack:
   # tesseract.js spawns a worker_thread from its own folder; keep it (and what it loads) on real disk
   - node_modules/tesseract.js/**
@@ -28,9 +28,9 @@ win:
   icon: build/icon.ico
   target:
     - target: nsis
-      arch: [x64]
+      arch: [ x64 ]
     - target: portable
-      arch: [x64]
+      arch: [ x64 ]
 nsis:
   oneClick: false
   allowToChangeInstallationDirectory: true

@@ -1,26 +1,11 @@
-import {
-  app,
-  BrowserWindow,
-  desktopCapturer,
-  globalShortcut,
-  ipcMain,
-  Menu,
-  nativeImage,
-  Tray
-} from 'electron'
 import { readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import type { SettingsPatch } from '@shared/api'
-import { GlyphMatcher, type Bitmap } from '@shared/glyphs'
+import { type Bitmap, GlyphMatcher } from '@shared/glyphs'
 import { parseExp, parseLevel, parseMesoLine, parseName } from '@shared/parse'
 import { ExpTracker } from '@shared/tracker'
-import type {
-  CaptureStatus,
-  RegionDebug,
-  RegionKey,
-  TrackerSnapshot,
-  WindowSourceInfo
-} from '@shared/types'
+import type { CaptureStatus, RegionDebug, RegionKey, TrackerSnapshot, WindowSourceInfo } from '@shared/types'
+import { app, BrowserWindow, desktopCapturer, globalShortcut, ipcMain, Menu, nativeImage, Tray } from 'electron'
 import { OcrEngine } from './ocr'
 import { SettingsStore } from './store'
 import { createCaptureWindow, createOverlayWindow, createSettingsWindow, OVERLAY_WIDTH } from './windows'
@@ -86,7 +71,7 @@ function snapshot(now = Date.now()): TrackerSnapshot {
   const cur = tracker.current
   const s = store.value
   const ratePerHour = tracker.exp.ratePerHour(30 * 60_000, now)
-  const remaining = cur?.required !== undefined ? Math.max(0, cur.required - cur.exp) : undefined
+  const remaining = cur?.required === undefined ? undefined : Math.max(0, cur.required - cur.exp)
   return {
     capture: captureStatus,
     calibrated: Boolean(s.regions.exp),
@@ -100,7 +85,7 @@ function snapshot(now = Date.now()): TrackerSnapshot {
     last5m: tracker.exp.gainSince(now - 5 * 60_000, now),
     ratePerHour,
     session: tracker.exp.total,
-    sessionSeconds: tracker.exp.startT !== undefined ? (now - tracker.exp.startT) / 1000 : 0,
+    sessionSeconds: tracker.exp.startT === undefined ? 0 : (now - tracker.exp.startT) / 1000,
     etaSeconds:
       remaining !== undefined && ratePerHour && ratePerHour > 0 ? (remaining / ratePerHour) * 3600 : undefined,
     levelsGained: tracker.levelsGained,
@@ -196,7 +181,7 @@ async function handleRegion(key: RegionKey, png: Uint8Array): Promise<{ retry: b
   const started = Date.now()
   const buf = Buffer.from(png)
   let text = ''
-  let source: 'glyph' | 'tesseract' = 'tesseract'
+  let reader: 'glyph' | 'tesseract' = 'tesseract'
   let bitmap: Bitmap | undefined
 
   // EXP changes on every kill: read it with the learned glyph templates when possible.
@@ -209,11 +194,11 @@ async function handleRegion(key: RegionKey, png: Uint8Array): Promise<{ retry: b
       const g = glyphs.readExp(bitmap)
       if (g) {
         text = g
-        source = 'glyph'
+        reader = 'glyph'
       }
     }
   }
-  if (source === 'tesseract') {
+  if (reader === 'tesseract') {
     try {
       text = await ocr.recognize(key, buf)
     } catch (err) {
@@ -241,11 +226,14 @@ async function handleRegion(key: RegionKey, png: Uint8Array): Promise<{ retry: b
       if (accepted) {
         glyphRejects = 0
         // Only readings the tracker validated are used to teach the glyph matcher.
-        if (source === 'tesseract' && bitmap && glyphs.learnExp(bitmap, r.exp, r.percent)) {
+        if (reader === 'tesseract' && bitmap && glyphs.learnExp(bitmap, r.exp, r.percent)) {
           saveGlyphs()
-          if (DEBUG) console.log(`[glyphs] learned; digits known per size: ${JSON.stringify(Object.fromEntries(Object.keys(glyphs.templates).map((h) => [h, glyphs.digitsKnown(Number(h))])))}`)
+          if (DEBUG)
+            console.log(
+              `[glyphs] learned; digits known per size: ${JSON.stringify(Object.fromEntries(Object.keys(glyphs.templates).map((h) => [h, glyphs.digitsKnown(Number(h))])))}`
+            )
         }
-      } else if (source === 'glyph' && !retry && ++glyphRejects >= 3) {
+      } else if (reader === 'glyph' && !retry && ++glyphRejects >= 3) {
         // Templates keep producing readings the tracker throws out: start learning again.
         console.warn('Glyph templates look wrong; relearning')
         glyphs.templates = {}
@@ -266,13 +254,19 @@ async function handleRegion(key: RegionKey, png: Uint8Array): Promise<{ retry: b
       parsed = `${n.name}${n.job ? ` (${n.job})` : ''}`
     }
   } else if (key === 'notices') {
-    const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean)
+    const lines = text
+      .split(/\r?\n/u)
+      .map((l) => l.trim())
+      .filter(Boolean)
     tracker.ingestNotices(lines, t)
     parsed = `${lines.filter((l) => parseMesoLine(l) !== undefined).length} meso line(s), session ${tracker.mesos.total}`
   }
 
   if (DEBUG) writeFileSync(join(app.getPath('temp'), `exp-tracker-${key}.png`), buf)
-  if (DEBUG) console.log(`[ocr] ${key} ${source} ${Date.now() - started}ms ${JSON.stringify(text.trim())} -> ${parsed}${retry ? ' (retry)' : ''}`)
+  if (DEBUG)
+    console.log(
+      `[ocr] ${key} ${reader} ${Date.now() - started}ms ${JSON.stringify(text.trim())} -> ${parsed}${retry ? ' (retry)' : ''}`
+    )
   broadcast()
   if (settingsWin && !settingsWin.isDestroyed() && settingsWin.isVisible()) {
     const debug: RegionDebug = {
@@ -321,7 +315,9 @@ function openSettings(): void {
     return
   }
   settingsWin = createSettingsWindow()
-  settingsWin.on('closed', () => (settingsWin = null))
+  settingsWin.on('closed', () => {
+    settingsWin = null
+  })
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -338,7 +334,13 @@ function updateTrayMenu(): void {
   const o = store.value.overlay
   tray.setContextMenu(
     Menu.buildFromTemplate([
-      { label: 'Show overlay', type: 'checkbox', checked: o.visible, accelerator: SHORTCUT_TOGGLE, click: toggleVisible },
+      {
+        label: 'Show overlay',
+        type: 'checkbox',
+        checked: o.visible,
+        accelerator: SHORTCUT_TOGGLE,
+        click: toggleVisible
+      },
       {
         label: 'Lock overlay (click-through)',
         type: 'checkbox',
@@ -474,8 +476,10 @@ app.whenReady().then(() => {
   if (DEBUG) {
     setInterval(() => {
       const m = process.memoryUsage()
-      const mb = (n: number): number => Math.round(n / 1048576)
-      console.log(`[mem] rss=${mb(m.rss)} heapUsed=${mb(m.heapUsed)} external=${mb(m.external)} arrayBuffers=${mb(m.arrayBuffers)}`)
+      const mb = (n: number): number => Math.round(n / 1_048_576)
+      console.log(
+        `[mem] rss=${mb(m.rss)} heapUsed=${mb(m.heapUsed)} external=${mb(m.external)} arrayBuffers=${mb(m.arrayBuffers)}`
+      )
     }, 20_000)
   }
   void searchForGame()
@@ -488,10 +492,13 @@ app.whenReady().then(() => {
 })
 
 // Tray app: closing the settings window must not quit.
-app.on('window-all-closed', () => {})
+app.on('window-all-closed', () => {
+  // Intentionally empty: the tray keeps the app alive.
+})
 
 app.on('before-quit', () => {
   quitting = true
+  // biome-ignore lint/suspicious/noUnnecessaryConditions: before-quit can fire before whenReady assigns the store.
   store?.flush()
   globalShortcut.unregisterAll()
   void ocr.dispose()

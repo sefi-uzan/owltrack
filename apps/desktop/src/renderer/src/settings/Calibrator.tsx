@@ -1,10 +1,10 @@
-import { useEffect, useRef, useState } from 'react'
-import { Camera, Crosshair, ListChecks, Trash2, ZoomIn } from 'lucide-react'
-import type { Rect, RegionDebug, RegionKey, Settings } from '@shared/types'
 import { Button } from '@repo/ui/components/button'
 import { Slider } from '@repo/ui/components/slider'
 import { Switch } from '@repo/ui/components/switch'
 import { cn } from '@repo/ui/lib/utils'
+import type { Rect, RegionDebug, RegionKey, Settings } from '@shared/types'
+import { Camera, Crosshair, ListChecks, Trash2, ZoomIn } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
 import { Inset, Panel } from './Panel'
 
 const api = window.api
@@ -25,7 +25,6 @@ export const REGION_INFO: Record<RegionKey, { label: string; color: string; hint
 }
 
 const ORDER: RegionKey[] = ['exp', 'level', 'name', 'notices']
-
 
 /** Regions the tracker needs; meso notices are optional. */
 export const REQUIRED_REGIONS: RegionKey[] = ['exp', 'level', 'name']
@@ -55,9 +54,9 @@ export function Calibrator({ settings, streaming }: { settings: Settings; stream
     else setError('No frame received. Make sure the game is running and not minimized.')
   }
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: grab one frame when streaming starts, not on every re-render.
   useEffect(() => {
     if (streaming && !frame) void grab()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [streaming])
 
   const point = (e: React.PointerEvent): { x: number; y: number } => {
@@ -129,12 +128,23 @@ export function Calibrator({ settings, streaming }: { settings: Settings; stream
               onPointerMove={onMove}
               onPointerUp={onUp}
             >
-              <img src={frame} className="pointer-events-none block w-full" draggable={false} />
+              <img
+                src={frame}
+                alt="Game window snapshot"
+                className="pointer-events-none block w-full"
+                draggable={false}
+              />
               {ORDER.map((key) => {
                 const r = settings.regions[key]
                 if (!r) return null
                 return (
-                  <RectBox key={key} rect={r} color={REGION_INFO[key].color} label={REGION_INFO[key].label} dim={key !== active} />
+                  <RectBox
+                    key={key}
+                    rect={r}
+                    color={REGION_INFO[key].color}
+                    label={REGION_INFO[key].label}
+                    dim={key !== active}
+                  />
                 )
               })}
               {draft && <RectBox rect={draft} color={info.color} label={info.label} />}
@@ -164,13 +174,16 @@ export function Calibrator({ settings, streaming }: { settings: Settings; stream
             >
               <div className="flex items-center gap-2 px-2 py-1.5">
                 <button
+                  type="button"
                   className="flex min-w-0 flex-1 items-center gap-2 text-left disabled:opacity-50"
                   disabled={off}
                   onClick={() => setActive(key)}
                   title={off ? 'Turn on meso counting first' : `Draw ${ri.label}`}
                 >
                   <span className="size-2.5 shrink-0 rounded-sm" style={{ background: ri.color }} />
-                  <span className={cn('truncate text-sm font-semibold', selected && 'text-maple-gold')}>{ri.label}</span>
+                  <span className={cn('truncate text-sm font-semibold', selected && 'text-maple-gold')}>
+                    {ri.label}
+                  </span>
                   <span
                     className={cn(
                       'ml-auto shrink-0 rounded px-1.5 text-[10px] font-bold',
@@ -201,10 +214,14 @@ export function Calibrator({ settings, streaming }: { settings: Settings; stream
                 <div className="flex flex-col gap-2 px-2 pb-2">
                   {d && rect ? (
                     <Inset className="flex flex-col gap-1 p-1.5">
-                      <img src={d.image} className="max-h-16 w-full rounded-sm bg-white object-contain object-left" />
+                      <img
+                        src={d.image}
+                        alt="What the OCR saw"
+                        className="max-h-16 w-full rounded-sm bg-white object-contain object-left"
+                      />
                       <div className="flex items-baseline justify-between gap-2 text-[11px]">
                         <code className="truncate text-muted-foreground" title={d.text}>
-                          {d.text.replace(/\n/g, ' ⏎ ') || '(nothing read)'}
+                          {d.text.replace(/\n/gu, ' ⏎ ') || '(nothing read)'}
                         </code>
                         <span className="shrink-0 font-semibold text-maple-gold">
                           {d.parsed} <span className="font-normal text-muted-foreground">· {d.ms}ms</span>
@@ -217,7 +234,10 @@ export function Calibrator({ settings, streaming }: { settings: Settings; stream
                     </p>
                   )}
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <span className="w-24 shrink-0" title="Brightness cut-off for the black-on-white mask the OCR reads">
+                    <span
+                      className="w-24 shrink-0"
+                      title="Brightness cut-off for the black-on-white mask the OCR reads"
+                    >
                       Threshold <b className="text-white tabular-nums">{settings.thresholds[key]}</b>
                     </span>
                     <Slider
@@ -225,10 +245,18 @@ export function Calibrator({ settings, streaming }: { settings: Settings; stream
                       max={240}
                       step={5}
                       value={[settings.thresholds[key]]}
-                      onValueChange={([v]) => void api.updateSettings({ thresholds: { ...settings.thresholds, [key]: v } })}
+                      onValueChange={([v]) =>
+                        void api.updateSettings({ thresholds: { ...settings.thresholds, [key]: v } })
+                      }
                     />
                     {rect && (
-                      <Button size="icon" variant="ghost" className="size-7 shrink-0" onClick={() => clear(key)} title="Clear">
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="size-7 shrink-0"
+                        onClick={() => clear(key)}
+                        title="Clear"
+                      >
                         <Trash2 />
                       </Button>
                     )}
@@ -261,7 +289,11 @@ function RectBox({ rect, color, label, dim }: { rect: Rect; color: string; label
       }}
     >
       <span
-        className={cn('absolute -top-5 rounded px-1', rect.x + rect.w > 0.85 ? 'right-0' : 'left-0', 'text-[10px] font-semibold whitespace-nowrap text-black')}
+        className={cn(
+          'absolute -top-5 rounded px-1',
+          rect.x + rect.w > 0.85 ? 'right-0' : 'left-0',
+          'text-[10px] font-semibold whitespace-nowrap text-black'
+        )}
         style={{ background: color }}
       >
         {label}

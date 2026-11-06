@@ -1,7 +1,3 @@
-import { useEffect, useState } from 'react'
-import { BarChart3, Crosshair, Eye, Gamepad2, MonitorUp, RotateCcw, ScanText, SlidersHorizontal } from 'lucide-react'
-import { compact, duration, grouped, signedCompact } from '@shared/format'
-import type { Settings as SettingsT, TrackerSnapshot, WindowSourceInfo } from '@shared/types'
 import { Button } from '@repo/ui/components/button'
 import { Input } from '@repo/ui/components/input'
 import { Label } from '@repo/ui/components/label'
@@ -9,6 +5,10 @@ import { Slider } from '@repo/ui/components/slider'
 import { Switch } from '@repo/ui/components/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@repo/ui/components/tabs'
 import { cn } from '@repo/ui/lib/utils'
+import { compact, duration, grouped, signedCompact } from '@shared/format'
+import type { Settings as SettingsT, TrackerSnapshot, WindowSourceInfo } from '@shared/types'
+import { BarChart3, Crosshair, Eye, Gamepad2, MonitorUp, RotateCcw, ScanText, SlidersHorizontal } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { Calibrator, REQUIRED_REGIONS } from './Calibrator'
 import { Inset, Panel } from './Panel'
 
@@ -18,6 +18,7 @@ function Row({ label, hint, children }: { label: React.ReactNode; hint?: string;
   return (
     <div className="flex items-center justify-between gap-4 py-2.5">
       <div className="min-w-0">
+        {/* biome-ignore lint/a11y/noLabelWithoutControl: the row is a visual label for the control beside it. */}
         <Label className="text-[13px]">{label}</Label>
         {hint && <p className="mt-1 text-xs leading-snug text-muted-foreground">{hint}</p>}
       </div>
@@ -38,7 +39,13 @@ function GameWindow({ settings, snap }: { settings: SettingsT; snap: TrackerSnap
 
   const state = snap?.capture.state ?? 'idle'
   const streaming = state === 'streaming'
-  const label = streaming ? 'Capturing' : state === 'error' ? 'Error' : state === 'starting' ? 'Connecting' : 'Searching'
+  const label = streaming
+    ? 'Capturing'
+    : state === 'error'
+      ? 'Error'
+      : state === 'starting'
+        ? 'Connecting'
+        : 'Searching'
   const detail = streaming
     ? `${snap?.capture.windowName} · ${snap?.capture.frameWidth}×${snap?.capture.frameHeight}`
     : (snap?.capture.message ?? 'Run the game windowed or borderless.')
@@ -69,11 +76,13 @@ function GameWindow({ settings, snap }: { settings: SettingsT; snap: TrackerSnap
       </Button>
       {windows && (
         <>
+          {/* biome-ignore lint/a11y/noStaticElementInteractions lint/a11y/noNoninteractiveElementInteractions lint/a11y/useKeyWithClickEvents: click-outside backdrop; Escape is not needed for a tray app picker. */}
           <div className="fixed inset-0 z-10" onClick={() => setWindows(null)} />
           <Inset className="absolute top-10 right-0 z-20 max-h-64 w-80 overflow-auto bg-card p-1 shadow-xl ring-maple-edge">
             {windows.length === 0 && <p className="p-3 text-sm text-muted-foreground">No windows found.</p>}
             {windows.map((w) => (
               <button
+                type="button"
                 key={w.id}
                 className="block w-full truncate rounded px-3 py-1.5 text-left text-sm hover:bg-accent hover:text-maple-gold"
                 onClick={() => {
@@ -112,7 +121,11 @@ function NameRow({ settings, detected }: { settings: SettingsT; detected?: strin
   return (
     <Row
       label="Character name"
-      hint={detected ? `Read as “${detected}”. Fix a wrong letter here; it's remembered per character.` : 'Shown once the name box is calibrated.'}
+      hint={
+        detected
+          ? `Read as “${detected}”. Fix a wrong letter here; it's remembered per character.`
+          : 'Shown once the name box is calibrated.'
+      }
     >
       <Input
         className="w-40"
@@ -138,7 +151,13 @@ function OverlayTab({ settings, snap }: { settings: SettingsT; snap: TrackerSnap
         <Row label="Lock in place" hint="Clicks pass through to the game. Ctrl+Shift+L to unlock and drag.">
           <Switch checked={o.locked} onCheckedChange={(v) => void api.updateSettings({ overlay: { locked: v } })} />
         </Row>
-        <Row label={<>Size <Value>{Math.round(o.scale * 100)}%</Value></>}>
+        <Row
+          label={
+            <>
+              Size <Value>{Math.round(o.scale * 100)}%</Value>
+            </>
+          }
+        >
           <Slider
             className="w-40"
             min={0.7}
@@ -148,7 +167,13 @@ function OverlayTab({ settings, snap }: { settings: SettingsT; snap: TrackerSnap
             onValueChange={([v]) => void api.updateSettings({ overlay: { scale: v } })}
           />
         </Row>
-        <Row label={<>Opacity <Value>{Math.round(o.opacity * 100)}%</Value></>}>
+        <Row
+          label={
+            <>
+              Opacity <Value>{Math.round(o.opacity * 100)}%</Value>
+            </>
+          }
+        >
           <Slider
             className="w-40"
             min={0.3}
@@ -163,7 +188,11 @@ function OverlayTab({ settings, snap }: { settings: SettingsT; snap: TrackerSnap
       <Panel title="Reading" icon={<ScanText />} bodyClassName="divide-y divide-white/[0.06] py-1">
         <NameRow settings={settings} detected={snap?.detectedName} />
         <Row
-          label={<>Capture rate <Value>{settings.captureFps} fps</Value></>}
+          label={
+            <>
+              Capture rate <Value>{settings.captureFps} fps</Value>
+            </>
+          }
           hint="Regions are only read when they change, so this mostly sets reaction time."
         >
           <Slider
@@ -189,8 +218,8 @@ function OverlayTab({ settings, snap }: { settings: SettingsT; snap: TrackerSnap
 function SessionTab({ snap }: { snap: TrackerSnapshot | null }) {
   const items: [string, string, boolean?][] = [
     ['Character', `${snap?.name ?? '—'}${snap?.job ? ` · ${snap.job}` : ''}`],
-    ['Level', snap?.level !== undefined ? String(snap.level) : '—'],
-    ['EXP', snap?.exp !== undefined ? `${grouped(snap.exp)} / ${grouped(snap.required)}` : '—'],
+    ['Level', snap?.level === undefined ? '—' : String(snap.level)],
+    ['EXP', snap?.exp === undefined ? '—' : `${grouped(snap.exp)} / ${grouped(snap.required)}`],
     ['Session length', duration(snap?.sessionSeconds)],
     ['Gained this session', signedCompact(snap?.session), true],
     ['Levels gained', String(snap?.levelsGained ?? 0)],
@@ -222,7 +251,7 @@ function SessionTab({ snap }: { snap: TrackerSnapshot | null }) {
 
 /** Compact live readout in the sidebar, so you can see calibration working from any tab. */
 function LiveReadout({ snap }: { snap: TrackerSnapshot | null }) {
-  const pct = snap?.percent !== undefined ? Math.max(0, Math.min(100, snap.percent)) : 0
+  const pct = snap?.percent === undefined ? 0 : Math.max(0, Math.min(100, snap.percent))
   return (
     <Inset className="flex flex-col gap-1.5 p-2.5 text-xs">
       <div className="flex items-baseline justify-between gap-2">
@@ -235,7 +264,7 @@ function LiveReadout({ snap }: { snap: TrackerSnapshot | null }) {
           style={{ width: `${pct}%` }}
         />
         <span className="relative block text-center text-[10px] leading-3.5 font-bold text-white [text-shadow:0_1px_1px_rgba(0,0,0,0.8)]">
-          {snap?.percent !== undefined ? `${snap.percent.toFixed(2)}%` : '—'}
+          {snap?.percent === undefined ? '—' : `${snap.percent.toFixed(2)}%`}
         </span>
       </div>
       <div className="flex justify-between text-maple-muted">
@@ -287,7 +316,9 @@ export function Settings() {
               <span
                 className={cn(
                   'ml-auto rounded px-1.5 text-[10px] font-bold',
-                  setCount === REQUIRED_REGIONS.length ? 'bg-emerald-500/15 text-emerald-400' : 'bg-amber-500/15 text-amber-400'
+                  setCount === REQUIRED_REGIONS.length
+                    ? 'bg-emerald-500/15 text-emerald-400'
+                    : 'bg-amber-500/15 text-amber-400'
                 )}
               >
                 {setCount}/{REQUIRED_REGIONS.length}

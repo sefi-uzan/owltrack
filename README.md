@@ -69,6 +69,8 @@ npm install
 npm run dev          # electron-vite dev with HMR
 npm test             # parser + tracker unit tests (vitest)
 npm run typecheck    # every workspace
+npm run check        # Biome lint + format check (Ultracite preset, see biome.jsonc)
+npm run fix          # apply Biome's safe fixes and formatting
 npm run dist         # apps/desktop/dist/EXP Tracker-Setup-x.y.z.exe and a portable exe
 npm run icons -w @repo/desktop   # regenerate build/icon.ico, resources/tray.png from assets/icon.svg
 ```

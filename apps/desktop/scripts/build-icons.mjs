@@ -1,5 +1,5 @@
 // Rasterises assets/icon.svg into the PNG/ICO files Electron and electron-builder need.
-import { readFileSync, writeFileSync, mkdirSync } from 'node:fs'
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { Resvg } from '@resvg/resvg-js'
 import pngToIco from 'png-to-ico'
 
