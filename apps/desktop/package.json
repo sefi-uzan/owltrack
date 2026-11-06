@@ -1,6 +1,6 @@
 {
   "name": "@repo/desktop",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "Always-on-top MapleStory EXP tracker overlay that reads your level, name and EXP from the game window.",
   "license": "MIT",
@@ -9,8 +9,8 @@
   "scripts": {
     "build": "electron-vite build",
     "dev": "electron-vite dev",
-    "dist": "electron-vite build && electron-builder --win",
-    "dist:dir": "electron-vite build && electron-builder --win --dir",
+    "dist": "electron-vite build && electron-builder --win --publish never",
+    "dist:dir": "electron-vite build && electron-builder --win --dir --publish never",
     "icons": "node scripts/build-icons.mjs",
     "preview": "electron-vite preview",
     "test": "vitest run",

@@ -1,0 +1,19 @@
+# Agent notes
+
+## Workflow
+
+- **We push straight to `master`.** No feature branches or PRs unless asked.
+- **Every change that ships must bump the version** in `apps/desktop/package.json`
+  ([semver](https://semver.org)):
+  - **patch** (`0.1.0` → `0.1.1`): bug fixes, tweaks, internal refactors, CI/tooling.
+  - **minor** (`0.1.0` → `0.2.0`): new features or user-visible behaviour changes.
+  - **major** (`0.1.0` → `1.0.0`): breaking changes (e.g. settings/calibration data that no longer loads).
+
+  Keep `package-lock.json` in sync (`npm version <patch|minor|major> -w @repo/desktop --no-git-tag-version`).
+- CI (`.github/workflows/ci.yml`) runs lint, typecheck and tests, packages the Windows x64 app, and on
+  `master` tags `v<version>` and publishes a GitHub release with the installer and portable exe. If the
+  version wasn't bumped, the tag already exists and no release is made.
+
+## Checks
+
+Run before pushing: `npm run check` (Biome), `npm run typecheck`, `npm test`. `npm run fix` auto-fixes lint/format.
