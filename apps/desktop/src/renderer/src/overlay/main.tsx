@@ -1,10 +1,10 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import '@/styles/globals.css'
-import { Settings } from './Settings'
+import '@repo/ui/globals.css'
+import { Overlay } from './Overlay'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <Settings />
+    <Overlay />
   </StrictMode>
 )

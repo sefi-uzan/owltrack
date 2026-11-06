@@ -1,6 +1,10 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
 
+/* Tailwind only auto-scans the app's own folder; point it at this package and every app. */
+@source '../components';
+@source '../../../../apps/*/src';
+
 @custom-variant dark (&:is(.dark *));
 
 :root {

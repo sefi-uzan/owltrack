@@ -38,7 +38,7 @@ The tray icon has the same toggles, plus **Settings & calibration** and **Reset 
 - Every frame, only the calibrated regions are copied (GPU-side, into one small atlas) and read back
   once. Each region becomes a 1-bit "text mask".
 - OCR runs **only when a region's mask changes**, i.e. when the numbers change.
-- **EXP is read by a self-learned glyph matcher** (`src/shared/glyphs.ts`, ~1 ms per read). Whenever
+- **EXP is read by a self-learned glyph matcher** (`apps/desktop/src/shared/glyphs.ts`, ~1 ms per read). Whenever
   Tesseract produces a reading that the tracker validated, the image is cut into glyphs and labelled
   with the known digits. After about a minute of grinding all ten digits are known, and from then on
   Tesseract only reads the level, the name, the occasional cross-check (every 100th EXP read) and any
@@ -52,7 +52,7 @@ The tray icon has the same toggles, plus **Settings & calibration** and **Reset 
 
 ## Accuracy safeguards
 
-OCR is noisy, so readings are sanity-checked before they count (`src/shared/tracker.ts`):
+OCR is noisy, so readings are sanity-checked before they count (`apps/desktop/src/shared/tracker.ts`):
 
 - EXP and % must agree on the EXP required for the level, which rejects misread digits.
 - The first reading and any drop in EXP have to be seen twice.
@@ -62,21 +62,37 @@ OCR is noisy, so readings are sanity-checked before they count (`src/shared/trac
 
 ## Development
 
+A Turborepo with npm workspaces. Run these from the repo root:
+
 ```bash
 npm install
 npm run dev          # electron-vite dev with HMR
 npm test             # parser + tracker unit tests (vitest)
-npm run typecheck
-npm run dist         # dist/EXP Tracker-Setup-x.y.z.exe and a portable exe
-npm run icons        # regenerate build/icon.ico, resources/tray.png from assets/icon.svg
+npm run typecheck    # every workspace
+npm run dist         # apps/desktop/dist/EXP Tracker-Setup-x.y.z.exe and a portable exe
+npm run icons -w @repo/desktop   # regenerate build/icon.ico, resources/tray.png from assets/icon.svg
 ```
 
 Set `EXP_TRACKER_DEBUG=1` to log every OCR pass and per-frame capture timings to the console.
 
 ```
-src/main       Electron main: windows, tray, shortcuts, window discovery, OCR worker, settings
-src/preload    contextBridge API (typed in src/shared/api.ts)
-src/renderer   overlay.html (the HUD), settings.html (shadcn UI + calibrator),
-               capture.html (hidden: video stream → crops → change detection)
-src/shared     pure logic: OCR text parsing, EXP tracker, formatting (unit tested)
+apps/desktop        the Electron app (@repo/desktop)
+  src/main          Electron main: windows, tray, shortcuts, window discovery, OCR worker, settings
+  src/preload       contextBridge API (typed in src/shared/api.ts)
+  src/renderer      overlay.html (the HUD), settings.html (shadcn UI + calibrator),
+                    capture.html (hidden: video stream → crops → change detection)
+  src/shared        pure logic: OCR text parsing, EXP tracker, formatting (unit tested)
+packages/ui         shadcn components, cn() and the theme in src/styles/globals.css (@repo/ui)
 ```
+
+Add shadcn components from the ui package so both the file and its dependencies land there:
+`cd packages/ui && npx shadcn@latest add dialog`. (Running it from `apps/desktop` writes the file to
+`packages/ui` too, but puts the npm dependencies in the app.) New registry components import `cn`
+from shadcn's `cn` package rather than `@repo/ui/lib/utils`.
+
+`packages/ui` exports `./components`, `./lib` and `./hooks` as exact paths besides the `/*`
+wildcards. Nothing imports them; they're there for the shadcn CLI, which on Windows resolves
+wildcard folder aliases wrong whenever a parent folder name contains a dot (like `.t3`).
+
+Keep `electron` pinned to an exact version in `apps/desktop/package.json`: electron-builder can't
+see the hoisted copy in the root `node_modules`, so it needs the version spelled out.

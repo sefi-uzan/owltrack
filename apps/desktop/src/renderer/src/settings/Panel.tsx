@@ -1,4 +1,4 @@
-import { cn } from '@/lib/utils'
+import { cn } from '@repo/ui/lib/utils'
 
 /** A MapleStory-style window: raised slate title strip with a gold title over a dark panel body. */
 export function Panel({

@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { Camera, Crosshair, ListChecks, Trash2, ZoomIn } from 'lucide-react'
 import type { Rect, RegionDebug, RegionKey, Settings } from '@shared/types'
-import { Button } from '@/components/ui/button'
-import { Slider } from '@/components/ui/slider'
-import { Switch } from '@/components/ui/switch'
-import { cn } from '@/lib/utils'
+import { Button } from '@repo/ui/components/button'
+import { Slider } from '@repo/ui/components/slider'
+import { Switch } from '@repo/ui/components/switch'
+import { cn } from '@repo/ui/lib/utils'
 import { Inset, Panel } from './Panel'
 
 const api = window.api

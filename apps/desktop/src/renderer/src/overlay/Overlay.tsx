@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { Coins, Move, Pencil, Settings2 } from 'lucide-react'
 import { compact, duration, grouped, signedCompact } from '@shared/format'
 import type { Settings, TrackerSnapshot } from '@shared/types'
-import { cn } from '@/lib/utils'
+import { cn } from '@repo/ui/lib/utils'
 
 const api = window.api
 
