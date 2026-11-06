@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { newNoticeLines, parseExp, parseLevel, parseName, parseNoticeLine, parsePercent } from './parse'
+import { newNoticeLines, parseExp, parseLevel, parseMesoLine, parseName, parsePercent } from './parse'
 
 describe('parseLevel', () => {
   it('reads digits from the orange tiles', () => {
@@ -59,19 +59,19 @@ describe('parseName', () => {
 })
 
 describe('notices', () => {
-  it('parses notice lines', () => {
-    expect(parseNoticeLine('You received EXP (+41)')).toMatchObject({ kind: 'exp', amount: 41 })
-    expect(parseNoticeLine('You have gained mesos (+52)')).toMatchObject({ kind: 'meso', amount: 52 })
-    expect(parseNoticeLine('Orange Potion x1 earned. (Use)')).toMatchObject({
-      kind: 'item',
-      item: 'Orange Potion',
-      qty: 1,
-      category: 'Use'
-    })
-    expect(parseNoticeLine('Maple Leaf x1 earned. (Etc)')).toMatchObject({ kind: 'item', item: 'Maple Leaf' })
-    expect(parseNoticeLine('Maple Les +1 rarned ‘Et')).toMatchObject({ kind: 'item', item: 'Maple Les', qty: 1 })
-    expect(parseNoticeLine('Toul have gamed mesos (+52)')).toMatchObject({ kind: 'meso', amount: 52 })
-    expect(parseNoticeLine('~~~')).toBeUndefined()
+  it('reads only meso lines', () => {
+    expect(parseMesoLine('You have gained mesos (+52)')).toBe(52)
+    expect(parseMesoLine('You have gained mesos (+1,250)')).toBe(1250)
+    // Real misreads of the wording from the live game still count...
+    expect(parseMesoLine('Toul have gamed mesos (+52)')).toBe(52)
+    expect(parseMesoLine('You have gamed mesas (+53)')).toBe(53)
+    // ...but a broken amount (half-faded line) is skipped, not guessed.
+    expect(parseMesoLine('You have gamed mesos (+hd)')).toBeUndefined()
+    expect(parseMesoLine('You have gained mesos (+h 3')).toBeUndefined()
+    expect(parseMesoLine('vag received ESF (+5100')).toBeUndefined()
+    // EXP and item lines are ignored: EXP comes from the status bar, items aren't tracked.
+    expect(parseMesoLine('You received EXP (+50)')).toBeUndefined()
+    expect(parseMesoLine('Evil Eye Tail x1 earned. (Etc)')).toBeUndefined()
   })
 
   it('finds only lines that scrolled in', () => {

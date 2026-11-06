@@ -13,11 +13,6 @@ export interface NameReading {
   job?: string
 }
 
-export type Notice =
-  | { kind: 'exp'; amount: number; raw: string }
-  | { kind: 'meso'; amount: number; raw: string }
-  | { kind: 'item'; item: string; qty: number; category?: string; raw: string }
-
 const digitsOnly = (s: string): string => s.replace(/\D/g, '')
 
 export function parseLevel(text: string): number | undefined {
@@ -103,22 +98,21 @@ export function parseName(text: string): NameReading {
   return { job: job || undefined, name: cleanWord(lines[lines.length - 1]) }
 }
 
-const amount = (s: string): number => Number(digitsOnly(s))
-
-export function parseNoticeLine(line: string): Notice | undefined {
+/**
+ * Meso amount from a notice line like "You have gained mesos (+52)", or undefined.
+ *
+ * Only meso lines are used: EXP comes from the status bar (which is authoritative and
+ * self-checking), and item drops aren't tracked. The wording may be misread ("gamed mesas"), but
+ * the amount must be a clean "(+digits)" — a missing ")" or letters in the number usually means a
+ * half-faded line, which is skipped rather than guessed.
+ */
+export function parseMesoLine(line: string): number | undefined {
   const raw = line.trim()
-  if (!raw) return undefined
-  let m = raw.match(/EXP\s*\(?\s*\+\s*([\d,.]+)/i)
-  if (m && /receiv|gain/i.test(raw)) return { kind: 'exp', amount: amount(m[1]), raw }
-  m = raw.match(/meso\w*\s*\(?\s*\+\s*([\d,.]+)/i)
-  if (m) return { kind: 'meso', amount: amount(m[1]), raw }
-  // "Orange Potion x1 earned. (Use)" — faded lines often come back as "+1 rarned", so be lenient.
-  m = raw.match(/^(.+?)\s*[xX×+*]\s?(\d{1,4})\s+\S{0,2}(?:arned|rned|btained|ained)[^(]*(?:\((\w+)\))?/i)
-  if (m) {
-    const item = m[1].replace(/[^A-Za-z0-9'\- ]/g, '').trim()
-    if (item.length >= 2) return { kind: 'item', item, qty: Number(m[2]), category: m[3], raw }
-  }
-  return undefined
+  if (!/m[e3]s[oa0]s?\b/i.test(raw)) return undefined
+  const m = raw.match(/\(\s*\+\s*(\d{1,3}(?:,\d{3})+|\d{1,9})\s*\)/)
+  if (!m) return undefined
+  const n = Number(digitsOnly(m[1]))
+  return n > 0 ? n : undefined
 }
 
 /** Normalised form used to compare the same notice line across two OCR passes. */

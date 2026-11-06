@@ -26,7 +26,7 @@ export interface Settings {
   windowTitle: string
   regions: Partial<Record<RegionKey, Rect>>
   thresholds: Thresholds
-  /** Experimental: OCR the drop/meso notices on the right side of the screen. */
+  /** Experimental: OCR the meso notices ("You have gained mesos (+52)") on the right of the screen. */
   noticesEnabled: boolean
   /** Frames per second pulled from the game window. Only changed regions are OCR'd. */
   captureFps: number
@@ -56,11 +56,6 @@ export interface CaptureStatus {
   frameHeight?: number
 }
 
-export interface DropEntry {
-  t: number
-  text: string
-}
-
 export interface TrackerSnapshot {
   capture: CaptureStatus
   calibrated: boolean
@@ -83,7 +78,6 @@ export interface TrackerSnapshot {
   etaSeconds?: number
   levelsGained: number
   mesos: { session: number; ratePerHour?: number }
-  drops: DropEntry[]
   noticesEnabled: boolean
 }
 

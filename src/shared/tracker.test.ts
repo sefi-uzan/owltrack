@@ -91,12 +91,30 @@ describe('ExpTracker', () => {
     expect(t.exp.total).toBe(-42826)
   })
 
-  it('counts mesos and drops from notices once', () => {
+  it('counts each meso notice once and ignores other lines', () => {
     const t = new ExpTracker()
     t.reset(0)
     t.ingestNotices(['You have gained mesos (+52)', 'Maple Leaf x1 earned. (Etc)'], 0)
-    t.ingestNotices(['You have gained mesos (+52)', 'Maple Leaf x1 earned. (Etc)', 'You have gained mesos (+45)'], 500)
+    t.ingestNotices(['You have gained mesos (+52)', 'You received EXP (+50)', 'You have gained mesos (+45)'], 500)
+    t.ingestNotices(['You have gained mesos (+45)'], 1000)
     expect(t.mesos.total).toBe(97)
-    expect(t.drops.map((d) => d.text)).toEqual(['Maple Leaf x1'])
+  })
+
+  it('ignores meso amounts far above the typical drop (added-digit misreads)', () => {
+    const t = new ExpTracker()
+    t.reset(0)
+    const drops = [53, 56, 57, 53, 63, 55]
+    drops.forEach((m, i) => t.ingestNotices([`You have gained mesos (+${m})`], i * 1000))
+    t.ingestNotices(['You have gained mesos (+503)'], 10_000) // really +53
+    t.ingestNotices(['You have gained mesos (+58)'], 11_000)
+    expect(t.mesos.total).toBe(drops.reduce((a, b) => a + b, 0) + 58)
+  })
+
+  it('takes back a misread that arrived before the outlier check had enough samples', () => {
+    const t = new ExpTracker()
+    t.reset(0)
+    const seen = [55, 570, 54, 55, 64] // 570 is really 57, seen live
+    seen.forEach((m, i) => t.ingestNotices([`You have gained mesos (+${m})`], i * 1000))
+    expect(t.mesos.total).toBe(55 + 54 + 55 + 64)
   })
 })

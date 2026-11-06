@@ -213,18 +213,6 @@ function SessionTab({ snap }: { snap: TrackerSnapshot | null }) {
             </div>
           ))}
         </dl>
-        {snap?.drops.length ? (
-          <div className="mt-5">
-            <div className="mb-2 text-xs text-muted-foreground">Recent drops</div>
-            <div className="flex flex-wrap gap-1.5">
-              {snap.drops.map((d) => (
-                <Badge key={`${d.t}-${d.text}`} variant="secondary">
-                  {d.text}
-                </Badge>
-              ))}
-            </div>
-          </div>
-        ) : null}
       </CardContent>
     </Card>
   )

@@ -19,9 +19,9 @@ export const REGION_INFO: Record<RegionKey, { label: string; color: string; hint
     hint: 'Just the numbers, e.g. “66.380[15.50%]” — leave out the “EXP” label.'
   },
   notices: {
-    label: 'Drop / meso notices',
+    label: 'Meso notices',
     color: '#e879f9',
-    hint: 'Experimental. The lines like “You have gained mesos (+52)” on the right.'
+    hint: 'Experimental. The “You have gained mesos (+52)” lines on the right — only mesos are counted.'
   }
 }
 

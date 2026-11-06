@@ -12,7 +12,7 @@ import { readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import type { SettingsPatch } from '@shared/api'
 import { GlyphMatcher, type Bitmap } from '@shared/glyphs'
-import { parseExp, parseLevel, parseName } from '@shared/parse'
+import { parseExp, parseLevel, parseMesoLine, parseName } from '@shared/parse'
 import { ExpTracker } from '@shared/tracker'
 import type {
   CaptureStatus,
@@ -105,7 +105,6 @@ function snapshot(now = Date.now()): TrackerSnapshot {
       remaining !== undefined && ratePerHour && ratePerHour > 0 ? (remaining / ratePerHour) * 3600 : undefined,
     levelsGained: tracker.levelsGained,
     mesos: { session: tracker.mesos.total, ratePerHour: tracker.mesos.ratePerHour(30 * 60_000, now) },
-    drops: tracker.drops,
     noticesEnabled: s.noticesEnabled
   }
 }
@@ -269,7 +268,7 @@ async function handleRegion(key: RegionKey, png: Uint8Array): Promise<{ retry: b
   } else if (key === 'notices') {
     const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean)
     tracker.ingestNotices(lines, t)
-    parsed = `${lines.length} line(s)`
+    parsed = `${lines.filter((l) => parseMesoLine(l) !== undefined).length} meso line(s), session ${tracker.mesos.total}`
   }
 
   if (DEBUG) writeFileSync(join(app.getPath('temp'), `exp-tracker-${key}.png`), buf)

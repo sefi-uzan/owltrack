@@ -1,5 +1,4 @@
-import { newNoticeLines, parseNoticeLine, type ExpReading } from './parse'
-import type { DropEntry } from './types'
+import { newNoticeLines, parseMesoLine, type ExpReading } from './parse'
 
 const MIN = 60_000
 
@@ -78,6 +77,10 @@ const same = (a: ExpReading, b: ExpReading): boolean => a.exp === b.exp && a.per
 
 /** How long we wait for the level box to confirm a level-up after EXP drops. */
 const LEVEL_WAIT_MS = 4_000
+/** A meso notice this many times the typical recent amount is treated as a misread. */
+const MESO_OUTLIER_FACTOR = 6
+/** Meso drops needed before the outlier check kicks in. */
+const MESO_WARMUP = 5
 
 /**
  * Turns individual OCR readings into session statistics.
@@ -91,7 +94,6 @@ export class ExpTracker {
   readonly mesos = new Counter()
   level?: number
   levelsGained = 0
-  drops: DropEntry[] = []
 
   private accepted?: Accepted
   private candidate?: ExpReading
@@ -102,6 +104,7 @@ export class ExpTracker {
   /** EXP went down; waiting to learn whether it was a level-up or a death. */
   private pendingDrop?: { from: Accepted; to: Accepted; t: number }
   private lastNotices: string[] = []
+  private recentMesos: number[] = []
 
   get current(): Accepted | undefined {
     return this.accepted
@@ -111,7 +114,6 @@ export class ExpTracker {
     this.exp.start(t)
     this.mesos.start(t)
     this.levelsGained = 0
-    this.drops = []
     this.pendingDrop = undefined
     this.levelUpFrom = undefined
   }
@@ -124,7 +126,6 @@ export class ExpTracker {
     this.level = undefined
     this.levelCandidate = undefined
     this.levelsGained = 0
-    this.drops = []
     this.pendingDrop = undefined
     this.levelUpFrom = undefined
     this.exp.startT = undefined
@@ -236,18 +237,49 @@ export class ExpTracker {
     return { retry: false }
   }
 
+  /**
+   * Count mesos from the notice lines currently on screen. Only meso lines are considered, and
+   * only those that scrolled in since the last pass (see newNoticeLines).
+   */
   ingestNotices(lines: string[], t: number): void {
-    const fresh = newNoticeLines(this.lastNotices, lines)
-    this.lastNotices = lines
+    const mesoLines = lines.filter((l) => parseMesoLine(l) !== undefined)
+    const fresh = newNoticeLines(this.lastNotices, mesoLines)
+    this.lastNotices = mesoLines
     for (const line of fresh) {
-      const n = parseNoticeLine(line)
-      if (!n) continue
-      if (n.kind === 'meso') this.mesos.add(n.amount, t)
-      if (n.kind === 'item') {
-        this.drops.unshift({ t, text: `${n.item} x${n.qty}` })
-        this.drops.length = Math.min(this.drops.length, 8)
-      }
+      const amount = parseMesoLine(line)!
+      if (this.isMesoOutlier(amount)) continue
+      this.recentMesos.push(amount)
+      if (this.recentMesos.length > 15) this.recentMesos.shift()
+      this.mesos.add(amount, t)
+      if (this.recentMesos.length === MESO_WARMUP) this.dropWarmupOutliers(t)
     }
+  }
+
+  /**
+   * The outlier check needs a few samples first, so the very first drops are taken on trust.
+   * Once there are enough, re-check those and take back any misread ("+570" for "+57").
+   */
+  private dropWarmupOutliers(t: number): void {
+    const keep: number[] = []
+    for (const amount of this.recentMesos) {
+      const others = this.recentMesos.filter((a) => a !== amount)
+      const sorted = [...others].sort((a, b) => a - b)
+      const median = sorted[Math.floor(sorted.length / 2)]
+      if (median !== undefined && amount > median * MESO_OUTLIER_FACTOR) this.mesos.add(-amount, t)
+      else keep.push(amount)
+    }
+    this.recentMesos = keep
+  }
+
+  /**
+   * OCR tends to *add* digits to a fading amount ("+53" -> "+503"). Drops in one map are similar
+   * in size, so once we've seen a few, ignore amounts far above the typical one.
+   */
+  private isMesoOutlier(amount: number): boolean {
+    if (this.recentMesos.length < MESO_WARMUP) return false
+    const sorted = [...this.recentMesos].sort((a, b) => a - b)
+    const median = sorted[Math.floor(sorted.length / 2)]
+    return amount > median * MESO_OUTLIER_FACTOR
   }
 
   private creditLevelUp(from: Accepted, to: Accepted, t: number, bumpLevel: boolean, alreadyAccepted = false): void {

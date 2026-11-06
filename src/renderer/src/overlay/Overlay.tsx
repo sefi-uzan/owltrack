@@ -239,9 +239,11 @@ export function Overlay() {
         {snap?.noticesEnabled && (
           <div className="flex items-center gap-2 border-t border-[#e7d9c4] bg-[#f6ecdc] px-3 py-1.5 text-[11px] text-ink-muted">
             <Coins className="size-3.5 shrink-0 text-[#c9962b]" />
-            <span className="font-bold text-ink tabular-nums">+{compact(snap.mesos.session)}</span>
-            <span className="tabular-nums">{compact(snap.mesos.ratePerHour)}/h</span>
-            <span className="ml-auto truncate">{snap.drops[0]?.text ?? 'No drops yet'}</span>
+            <span className="font-semibold tracking-[0.08em] uppercase">Mesos</span>
+            <span className="ml-auto font-bold text-ink tabular-nums" title="Approximate: notice lines the OCR can't read cleanly are skipped, so this undercounts">
+              ≈ +{compact(snap.mesos.session)}
+            </span>
+            <span className="tabular-nums">· {compact(snap.mesos.ratePerHour)}/h</span>
           </div>
         )}
       </div>
