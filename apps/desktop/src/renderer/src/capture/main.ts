@@ -9,16 +9,16 @@
  */
 import type { CaptureStatus, RegionKey, Settings, WindowSourceInfo } from '@shared/types'
 import { REGION_KEYS } from '@shared/types'
-import { maskCount, maskDiff, maskGained, renderForOcr, textMask } from './pixels'
+import { maskDiff, renderForOcr, textMask } from './pixels'
 
 const api = window.api
 
 /** Minimum gap between two OCR passes of the same region. */
-const MIN_INTERVAL: Record<RegionKey, number> = { level: 800, name: 1500, exp: 200, notices: 600 }
+const MIN_INTERVAL: Record<RegionKey, number> = { level: 800, name: 1500, exp: 200 }
 /** Re-read regions now and then even if nothing changed, to self-heal from a bad read. */
 // EXP is read from learned glyphs (no Tesseract), so it can self-check often; the others are
 // rare Tesseract reads and shouldn't keep the OCR engine awake (it shuts down when idle).
-const FORCE_INTERVAL_MS: Record<RegionKey, number> = { exp: 20_000, level: 300_000, name: 300_000, notices: 60_000 }
+const FORCE_INTERVAL_MS: Record<RegionKey, number> = { exp: 20_000, level: 300_000, name: 300_000 }
 /** After this long without any region changing, sample fewer frames. */
 const IDLE_AFTER_MS = 20_000
 const IDLE_FPS = 2
@@ -46,7 +46,7 @@ let generation = 0
 let currentSource: WindowSourceInfo | null = null
 let wantSnapshot = false
 let lastFrameAt = 0
-/** Last time any region changed (a kill, a level-up, a new notice). */
+/** Last time any region changed (a kill, a level-up). */
 let lastChangeAt = performance.now()
 let frameSize = { w: 0, h: 0 }
 
@@ -171,7 +171,7 @@ function onFrame(frame: VideoFrame): boolean {
   let atlasH = 0
   for (const key of REGION_KEYS) {
     const rect = settings.regions[key]
-    if (!rect || (key === 'notices' && !settings.noticesEnabled)) continue
+    if (!rect) continue
     const st = regions.get(key)!
     if (st.busy) continue
     const sx = Math.max(0, Math.round(rect.x * W))
@@ -198,18 +198,7 @@ function onFrame(frame: VideoFrame): boolean {
     const threshold = settings.thresholds[key]
     const mask = textMask(key, pixels, threshold, atlasW, y, sw, sh)
     const minPixels = Math.max(2, mask.length * 0.0015)
-    let changed: boolean
-    if (key === 'notices') {
-      // Notices fade out constantly; only new text appearing is interesting. Fading lines just
-      // lose pixels, so trigger on pixels that turned *on*, and never OCR an empty box.
-      if (maskCount(mask) < minPixels) {
-        st.mask = mask
-        continue
-      }
-      changed = !st.mask || maskGained(mask, st.mask) > minPixels * 4
-    } else {
-      changed = !st.mask || maskDiff(mask, st.mask) > minPixels
-    }
+    const changed = !st.mask || maskDiff(mask, st.mask) > minPixels
     const due = st.retry || now - st.lastOcr > FORCE_INTERVAL_MS[key]
     if (!(changed || due) || now - st.lastOcr < MIN_INTERVAL[key]) continue
 

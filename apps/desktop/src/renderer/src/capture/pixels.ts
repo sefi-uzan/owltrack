@@ -2,14 +2,12 @@ import type { RegionKey } from '@shared/types'
 
 /**
  * Per-pixel "is this text?" test. MapleStory UI text is bright on a dark bar; the level digits
- * are white on orange tiles (so we also require a high blue channel), and floating notices are
- * light grey over arbitrary scenery (so we also require low saturation).
+ * are white on orange tiles (so we also require a high blue channel).
  */
 export function isText(key: RegionKey, r: number, g: number, b: number, threshold: number): boolean {
   const lum = 0.299 * r + 0.587 * g + 0.114 * b
   if (lum < threshold) return false
   if (key === 'level') return Math.min(r, g, b) >= threshold
-  if (key === 'notices') return Math.max(r, g, b) - Math.min(r, g, b) < 60
   return true
 }
 
@@ -44,23 +42,9 @@ export function maskDiff(a: Uint8Array, b: Uint8Array): number {
   return n
 }
 
-/** Pixels that are text in `next` but weren't in `prev`. */
-export function maskGained(next: Uint8Array, prev: Uint8Array): number {
-  if (next.length !== prev.length) return Number.POSITIVE_INFINITY
-  let n = 0
-  for (let i = 0; i < next.length; i++) if (next[i] && !prev[i]) n++
-  return n
-}
-
-export function maskCount(m: Uint8Array): number {
-  let n = 0
-  for (let i = 0; i < m.length; i++) n += m[i]
-  return n
-}
-
 /** Upscale factor that gets glyphs to a size Tesseract likes (~30-40px tall). */
 export function upscaleFor(key: RegionKey, height: number): number {
-  if (key === 'notices' || key === 'name') return 3
+  if (key === 'name') return 3
   if (height <= 20) return 4
   if (height <= 40) return 3
   return 2

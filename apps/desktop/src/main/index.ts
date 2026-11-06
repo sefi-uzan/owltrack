@@ -2,7 +2,7 @@ import { readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import type { SettingsPatch } from '@shared/api'
 import { type Bitmap, GlyphMatcher } from '@shared/glyphs'
-import { parseExp, parseLevel, parseMesoLine, parseName } from '@shared/parse'
+import { parseExp, parseLevel, parseName } from '@shared/parse'
 import { ExpTracker } from '@shared/tracker'
 import type { CaptureStatus, RegionDebug, RegionKey, TrackerSnapshot, WindowSourceInfo } from '@shared/types'
 import { app, BrowserWindow, desktopCapturer, globalShortcut, ipcMain, Menu, nativeImage, Tray } from 'electron'
@@ -97,9 +97,7 @@ function snapshot(now = Date.now()): TrackerSnapshot {
     sessionSeconds: tracker.exp.startT === undefined ? 0 : (now - tracker.exp.startT) / 1000,
     etaSeconds:
       remaining !== undefined && ratePerHour && ratePerHour > 0 ? (remaining / ratePerHour) * 3600 : undefined,
-    levelsGained: tracker.levelsGained,
-    mesos: { session: tracker.mesos.total, ratePerHour: tracker.mesos.ratePerHour(30 * 60_000, now) },
-    noticesEnabled: s.noticesEnabled
+    levelsGained: tracker.levelsGained
   }
 }
 
@@ -262,13 +260,6 @@ async function handleRegion(key: RegionKey, png: Uint8Array): Promise<{ retry: b
       }
       parsed = `${n.name}${n.job ? ` (${n.job})` : ''}`
     }
-  } else if (key === 'notices') {
-    const lines = text
-      .split(/\r?\n/u)
-      .map((l) => l.trim())
-      .filter(Boolean)
-    tracker.ingestNotices(lines, t)
-    parsed = `${lines.filter((l) => parseMesoLine(l) !== undefined).length} meso line(s), session ${tracker.mesos.total}`
   }
 
   if (DEBUG) writeFileSync(join(app.getPath('temp'), `owltrack-${key}.png`), buf)

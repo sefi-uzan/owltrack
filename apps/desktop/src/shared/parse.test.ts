@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { newNoticeLines, parseExp, parseLevel, parseMesoLine, parseName, parsePercent } from './parse'
+import { parseExp, parseLevel, parseName, parsePercent } from './parse'
 
 describe('parseLevel', () => {
   it('reads digits from the orange tiles', () => {
@@ -55,36 +55,5 @@ describe('parseName', () => {
     expect(parseName('Assassin\nYnshf\n')).toEqual({ job: 'Assassin', name: 'Ynshf' })
     expect(parseName('misusingtv')).toEqual({ name: 'misusingtv' })
     expect(parseName('')).toEqual({})
-  })
-})
-
-describe('notices', () => {
-  it('reads only meso lines', () => {
-    expect(parseMesoLine('You have gained mesos (+52)')).toBe(52)
-    expect(parseMesoLine('You have gained mesos (+1,250)')).toBe(1250)
-    // Real misreads of the wording from the live game still count...
-    expect(parseMesoLine('Toul have gamed mesos (+52)')).toBe(52)
-    expect(parseMesoLine('You have gamed mesas (+53)')).toBe(53)
-    // ...but a broken amount (half-faded line) is skipped, not guessed.
-    expect(parseMesoLine('You have gamed mesos (+hd)')).toBeUndefined()
-    expect(parseMesoLine('You have gained mesos (+h 3')).toBeUndefined()
-    expect(parseMesoLine('vag received ESF (+5100')).toBeUndefined()
-    // EXP and item lines are ignored: EXP comes from the status bar, items aren't tracked.
-    expect(parseMesoLine('You received EXP (+50)')).toBeUndefined()
-    expect(parseMesoLine('Evil Eye Tail x1 earned. (Etc)')).toBeUndefined()
-  })
-
-  it('finds only lines that scrolled in', () => {
-    const a = ['You received EXP (+41)', 'Orange Potion x1 earned. (Use)', 'You have gained mesos (+52)']
-    const b = ['Orange Potion x1 earned. (Use)', 'You have gained mesos (+52)', 'Maple Leaf x1 earned. (Etc)']
-    expect(newNoticeLines(a, b)).toEqual(['Maple Leaf x1 earned. (Etc)'])
-    expect(newNoticeLines(b, b)).toEqual([])
-    // A line OCR missed in the middle must not cause re-counting.
-    expect(newNoticeLines(a, [a[0], a[2]])).toEqual([])
-    // Small OCR differences are tolerated.
-    expect(newNoticeLines(a, ['Orange Potion xl earned. (Use)', a[2], 'You have gained mesos (+45)'])).toEqual([
-      'You have gained mesos (+45)'
-    ])
-    expect(newNoticeLines([], a)).toEqual(a)
   })
 })

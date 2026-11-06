@@ -1,7 +1,7 @@
 /** Screen regions inside the game window that we OCR. */
-export type RegionKey = 'level' | 'name' | 'exp' | 'notices'
+export type RegionKey = 'level' | 'name' | 'exp'
 
-export const REGION_KEYS: RegionKey[] = ['level', 'name', 'exp', 'notices']
+export const REGION_KEYS: RegionKey[] = ['level', 'name', 'exp']
 
 /** A rectangle normalised to the captured frame (0..1 on both axes). */
 export interface Rect {
@@ -26,8 +26,6 @@ export interface Settings {
   windowTitle: string
   regions: Partial<Record<RegionKey, Rect>>
   thresholds: Thresholds
-  /** Experimental: OCR the meso notices ("You have gained mesos (+52)") on the right of the screen. */
-  noticesEnabled: boolean
   /** Frames per second pulled from the game window. Only changed regions are OCR'd. */
   captureFps: number
   /** Spelling fixes for OCR'd names, e.g. { "Ynsht": "Ynshf" } — OCR confuses f/t, l/I in the game font. */
@@ -41,8 +39,7 @@ export const DEFAULT_SETTINGS: Settings = {
   windowTitle: 'MapleStory',
   regions: {},
   // Name uses a low cut-off: the thin crossbar of letters like "f" vanishes above ~120 ("Ynshf" -> "Ynsht").
-  thresholds: { level: 170, name: 110, exp: 145, notices: 150 },
-  noticesEnabled: false,
+  thresholds: { level: 170, name: 110, exp: 145 },
   captureFps: 4,
   nameAliases: {},
   overlay: { scale: 1, opacity: 1, locked: true, visible: true },
@@ -89,8 +86,6 @@ export interface TrackerSnapshot {
   sessionSeconds: number
   etaSeconds?: number
   levelsGained: number
-  mesos: { session: number; ratePerHour?: number }
-  noticesEnabled: boolean
 }
 
 /** Latest raw OCR output per region; shown in the calibration screen. */

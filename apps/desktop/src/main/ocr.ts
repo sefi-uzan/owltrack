@@ -14,8 +14,7 @@ type Kind = 'digits' | 'line' | 'block'
 const KIND: Record<RegionKey, Kind> = {
   level: 'digits',
   exp: 'line',
-  name: 'block',
-  notices: 'block'
+  name: 'block'
 }
 
 const PARAMS: Record<Kind, Partial<WorkerParams>> = {
@@ -32,7 +31,7 @@ const PARAMS: Record<Kind, Partial<WorkerParams>> = {
     tessedit_char_whitelist: '0123456789.,[]()%',
     user_defined_dpi: '300'
   },
-  // Free text: job/name box, drop notices.
+  // Free text: the job/name box.
   block: {
     tessedit_pageseg_mode: PSM.SINGLE_BLOCK,
     tessedit_char_whitelist: '',

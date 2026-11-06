@@ -1,6 +1,5 @@
 import { Button } from '@repo/ui/components/button'
 import { Slider } from '@repo/ui/components/slider'
-import { Switch } from '@repo/ui/components/switch'
 import { cn } from '@repo/ui/lib/utils'
 import type { Rect, RegionDebug, RegionKey, Settings } from '@shared/types'
 import { Camera, Crosshair, ListChecks, Trash2, ZoomIn } from 'lucide-react'
@@ -16,18 +15,12 @@ export const REGION_INFO: Record<RegionKey, { label: string; color: string; hint
     label: 'EXP numbers',
     color: '#84cc16',
     hint: 'Just the numbers, e.g. “66.380[15.50%]” — leave out the “EXP” label.'
-  },
-  notices: {
-    label: 'Meso notices',
-    color: '#e879f9',
-    hint: 'Experimental. The “You have gained mesos (+52)” lines on the right — only mesos are counted.'
   }
 }
 
-const ORDER: RegionKey[] = ['exp', 'level', 'name', 'notices']
-
-/** Regions the tracker needs; meso notices are optional. */
+/** Calibration order. The tracker needs all three. */
 export const REQUIRED_REGIONS: RegionKey[] = ['exp', 'level', 'name']
+const ORDER = REQUIRED_REGIONS
 
 function useRegionDebug(): Partial<Record<RegionKey, RegionDebug>> {
   const [debug, setDebug] = useState<Partial<Record<RegionKey, RegionDebug>>>({})
@@ -83,7 +76,7 @@ export function Calibrator({ settings, streaming }: { settings: Settings; stream
     if (d && d.w > 0.002 && d.h > 0.002) {
       void api.updateSettings({ regions: { ...settings.regions, [active]: d } })
       const next = ORDER[ORDER.indexOf(active) + 1]
-      if (next && !settings.regions[next] && (next !== 'notices' || settings.noticesEnabled)) setActive(next)
+      if (next && !settings.regions[next]) setActive(next)
     }
   }
 
@@ -162,7 +155,6 @@ export function Calibrator({ settings, streaming }: { settings: Settings; stream
           const ri = REGION_INFO[key]
           const rect = settings.regions[key]
           const d = debug[key]
-          const off = key === 'notices' && !settings.noticesEnabled
           const selected = active === key
           return (
             <div
@@ -175,10 +167,9 @@ export function Calibrator({ settings, streaming }: { settings: Settings; stream
               <div className="flex items-center gap-2 px-2 py-1.5">
                 <button
                   type="button"
-                  className="flex min-w-0 flex-1 items-center gap-2 text-left disabled:opacity-50"
-                  disabled={off}
+                  className="flex min-w-0 flex-1 items-center gap-2 text-left"
                   onClick={() => setActive(key)}
-                  title={off ? 'Turn on meso counting first' : `Draw ${ri.label}`}
+                  title={`Draw ${ri.label}`}
                 >
                   <span className="size-2.5 shrink-0 rounded-sm" style={{ background: ri.color }} />
                   <span className={cn('truncate text-sm font-semibold', selected && 'text-maple-gold')}>
@@ -187,30 +178,15 @@ export function Calibrator({ settings, streaming }: { settings: Settings; stream
                   <span
                     className={cn(
                       'ml-auto shrink-0 rounded px-1.5 text-[10px] font-bold',
-                      off
-                        ? 'bg-white/5 text-maple-muted'
-                        : rect
-                          ? 'bg-emerald-500/15 text-emerald-400'
-                          : 'bg-amber-500/15 text-amber-400'
+                      rect ? 'bg-emerald-500/15 text-emerald-400' : 'bg-amber-500/15 text-amber-400'
                     )}
                   >
-                    {off ? 'off' : rect ? 'set' : 'not set'}
+                    {rect ? 'set' : 'not set'}
                   </span>
                 </button>
-                {key === 'notices' && (
-                  <Switch
-                    checked={settings.noticesEnabled}
-                    onCheckedChange={(v) => {
-                      void api.updateSettings({ noticesEnabled: v })
-                      if (v) setActive('notices')
-                      else if (active === 'notices') setActive('exp')
-                    }}
-                    title="Count mesos (experimental)"
-                  />
-                )}
               </div>
 
-              {selected && !off && (
+              {selected && (
                 <div className="flex flex-col gap-2 px-2 pb-2">
                   {d && rect ? (
                     <Inset className="flex flex-col gap-1 p-1.5">

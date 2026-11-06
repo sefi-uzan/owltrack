@@ -1,7 +1,7 @@
 import { cn } from '@repo/ui/lib/utils'
 import { compact, duration, grouped, signedCompact } from '@shared/format'
 import type { Settings, TrackerSnapshot } from '@shared/types'
-import { Coins, Move, Pencil, Settings2 } from 'lucide-react'
+import { Move, Pencil, Settings2 } from 'lucide-react'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 
 const api = window.api
@@ -251,20 +251,6 @@ export function Overlay() {
             value={duration(snap?.etaSeconds)}
           />
         </div>
-
-        {snap?.noticesEnabled && (
-          <div className="flex items-center gap-2 border-t border-black/40 bg-black/20 px-3 py-1.5 text-[11px] text-maple-muted">
-            <Coins className="size-3.5 shrink-0 text-maple-gold" />
-            <span className="font-semibold tracking-[0.08em] uppercase">Mesos</span>
-            <span
-              className="ml-auto font-bold text-maple-gold tabular-nums"
-              title="Approximate: notice lines the OCR can't read cleanly are skipped, so this undercounts"
-            >
-              ≈ +{compact(snap.mesos.session)}
-            </span>
-            <span className="tabular-nums">· {compact(snap.mesos.ratePerHour)}/h</span>
-          </div>
-        )}
       </div>
     </div>
   )

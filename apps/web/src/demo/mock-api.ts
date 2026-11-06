@@ -18,15 +18,13 @@ import { DEMO_REGIONS, FRAME, gameFrame, ocrMask } from './game-frame'
 const TICK_MS = 1500
 /** EXP per kill in the demo; ~2400 kills/h puts the rate around 10B/h. */
 const KILL_EXP = 4_300_000
-const MESOS_PER_KILL = 52
 
 const START = {
   level: 215,
   required: 52_180_000_000,
   exp: 43_270_000_000,
   session: 7_412_000_000,
-  sessionSeconds: 42 * 60 + 17,
-  mesos: 4_180_000
+  sessionSeconds: 42 * 60 + 17
 }
 
 type Listener<T> = (value: T) => void
@@ -59,7 +57,6 @@ const state = {
   session: START.session,
   sessionSeconds: START.sessionSeconds,
   levelsGained: 0,
-  mesos: START.mesos,
   /** Recent kills, for the "last 5 minutes" figure. */
   recent: [] as { at: number; exp: number }[]
 }
@@ -96,33 +93,22 @@ function snapshot(): TrackerSnapshot {
     session: state.session,
     sessionSeconds: state.sessionSeconds,
     etaSeconds: rate ? ((state.required - state.exp) / rate) * 3600 : undefined,
-    levelsGained: state.levelsGained,
-    mesos: {
-      session: state.mesos,
-      ratePerHour: state.sessionSeconds > 0 ? (state.mesos / state.sessionSeconds) * 3600 : undefined
-    },
-    noticesEnabled: settings.noticesEnabled
+    levelsGained: state.levelsGained
   }
 }
 
-function emitDebug(lastMesos?: number): void {
+function emitDebug(): void {
   const exp = `${state.exp}[${percent().toFixed(2)}%]`
   const reads: [RegionDebug['key'], string, string, number][] = [
     ['exp', exp, `${state.exp.toLocaleString('en-US')} · ${percent().toFixed(2)}%`, 1],
     ['level', String(state.level), `Lv. ${state.level}`, 38],
     ['name', `${JOB}\n${NAME}`, NAME, 46]
   ]
-  if (settings.noticesEnabled && lastMesos) {
-    const text = `You have gained mesos (+${lastMesos})`
-    reads.push(['notices', text, `+${lastMesos} mesos`, 61])
-  }
   for (const [key, text, parsed, ms] of reads) {
     if (!settings.regions[key]) continue
     debugEvents.emit({ key, text, parsed, image: ocrMask(text), ms: ms + Math.floor(Math.random() * 6) })
   }
 }
-
-let lastNotice: string | undefined
 
 function tick(): void {
   state.sessionSeconds += TICK_MS / 1000
@@ -138,10 +124,7 @@ function tick(): void {
       state.levelsGained++
       state.required = Math.round(state.required * 1.06)
     }
-    const mesos = Math.round(MESOS_PER_KILL * (0.6 + Math.random() * 0.8))
-    state.mesos += mesos
-    lastNotice = `You have gained mesos (+${mesos})`
-    emitDebug(mesos)
+    emitDebug()
   }
   const cutoff = Date.now() - 5 * 60_000
   state.recent = state.recent.filter((k) => k.at >= cutoff)
@@ -180,7 +163,6 @@ export const mockApi: Api = {
     state.session = 0
     state.sessionSeconds = 0
     state.levelsGained = 0
-    state.mesos = 0
     state.recent = []
     trackerEvents.emit(snapshot())
     return Promise.resolve()
@@ -199,8 +181,7 @@ export const mockApi: Api = {
         job: JOB,
         name: NAME,
         exp: state.exp,
-        percent: percent(),
-        notice: lastNotice
+        percent: percent()
       })
     ),
   onRegionDebug: (cb) => {

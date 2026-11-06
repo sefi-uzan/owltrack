@@ -14,8 +14,7 @@ const px = (x: number, y: number, w: number, h: number): Rect => ({
 export const DEMO_REGIONS = {
   level: px(66, 851, 84, 38),
   name: px(166, 846, 150, 48),
-  exp: px(818, 853, 300, 34),
-  notices: px(1236, 596, 348, 44)
+  exp: px(818, 853, 300, 34)
 }
 
 export interface FrameState {
@@ -24,7 +23,6 @@ export interface FrameState {
   name: string
   exp: number
   percent: number
-  notice?: string
 }
 
 const svgUrl = (svg: string): string => `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`
@@ -77,7 +75,6 @@ export function gameFrame(s: FrameState): string {
     <path d="M-20 -84 Q 0 -110 20 -84 Z" fill="#6b3f1f"/><rect x="-14" y="-16" width="10" height="20" fill="#333"/>
     <rect x="4" y="-16" width="10" height="20" fill="#333"/>
   </g>
-  ${s.notice ? `<text x="1580" y="628" font-size="22" font-weight="600" fill="#fff" stroke="#000" stroke-width="0.6" text-anchor="end">${s.notice}</text>` : ''}
   <rect y="840" width="1600" height="60" fill="#1b1f2b"/>
   <rect y="840" width="1600" height="2" fill="#3a4258"/>
   <text x="24" y="878" font-size="19" font-weight="900" font-style="italic" fill="#fff">LV.</text>

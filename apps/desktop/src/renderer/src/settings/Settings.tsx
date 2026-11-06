@@ -238,12 +238,6 @@ function OverlayTab({ settings, snap }: { settings: SettingsT; snap: TrackerSnap
             onValueChange={([v]) => void api.updateSettings({ captureFps: v })}
           />
         </Row>
-        <Row label="Count mesos" hint="Experimental. Reads meso notices; draw the Meso notices box in Calibrate.">
-          <Switch
-            checked={settings.noticesEnabled}
-            onCheckedChange={(v) => void api.updateSettings({ noticesEnabled: v })}
-          />
-        </Row>
       </Panel>
 
       <AppPanel />
@@ -260,8 +254,7 @@ function SessionTab({ snap }: { snap: TrackerSnapshot | null }) {
     ['Gained this session', signedCompact(snap?.session), true],
     ['Levels gained', String(snap?.levelsGained ?? 0)],
     ['EXP / hour (30m)', compact(snap?.ratePerHour), true],
-    ['Time to level', duration(snap?.etaSeconds)],
-    ['Mesos this session', snap?.noticesEnabled ? compact(snap.mesos.session) : 'off']
+    ['Time to level', duration(snap?.etaSeconds)]
   ]
   return (
     <Panel
@@ -273,9 +266,9 @@ function SessionTab({ snap }: { snap: TrackerSnapshot | null }) {
         </Button>
       }
     >
-      <dl className="grid grid-cols-3 gap-2">
+      <dl className="grid grid-flow-row-dense grid-cols-3 gap-2">
         {items.map(([k, v, accent]) => (
-          <Inset key={k} className="px-3 py-2">
+          <Inset key={k} className={cn('px-3 py-2', k === 'EXP' && 'col-span-2')}>
             <dt className="text-[11px] font-semibold tracking-wide text-maple-muted uppercase">{k}</dt>
             <dd className={cn('truncate text-lg font-bold tabular-nums', accent && 'text-maple-gold')}>{v}</dd>
           </Inset>

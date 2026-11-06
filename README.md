@@ -33,9 +33,6 @@ Settings and learned glyphs live in `%APPDATA%\OwlTrack`; delete that folder to 
    - **EXP numbers**: just `66.380[15.50%]`, without the `EXP` label
    - **Level**: the orange digit tiles
    - **Job + name**: the two lines next to the level
-   - **Meso notices** (experimental, off by default): counts "You have gained mesos (+52)" lines.
-     Approximate: lines the OCR can't read cleanly are skipped, so it undercounts. EXP is always taken
-     from the status bar, never from notices, and item drops aren't tracked.
 5. Each region shows exactly what the OCR sees and what was parsed. Nudge the threshold until the text
    is crisp black on white.
 
