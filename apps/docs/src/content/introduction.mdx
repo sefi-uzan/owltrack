@@ -1,28 +1,40 @@
 # Introduction
 
-OwlTrack is a small, always-on-top overlay for MapleStory on Windows. It **reads your level, character
-name and EXP straight from the game window** and shows:
+OwlTrack is an overlay for MapleStory on Windows. The overlay stays on top of the game window. It
+shows how fast you get EXP and when you get to the next level.
 
-- **Last 5 min**: EXP gained in the last five minutes
-- **EXP/h**: your rate over the last 30 minutes (or the whole session, if it's shorter)
-- **This session**: total EXP gained since you started, and for how long
-- **To next level**: how long until you level at the current rate
+<Figure src="screenshots/overlay.png" alt="The OwlTrack overlay with the level, the EXP bar and four values" width={372}>
+  The OwlTrack overlay
+</Figure>
 
-It never touches the game's memory, files or network traffic. It looks at the screen, the same way you
-do, using OCR that runs entirely on your PC.
+## What OwlTrack shows
 
-<Callout>
-OwlTrack is free and open source under the MIT license. It's a fan-made tool and isn't affiliated with
-or endorsed by NEXON.
-</Callout>
+| Value | Description |
+| --- | --- |
+| **Last 5 min** | The EXP that you got in the last 5 minutes. |
+| **EXP/h** | Your EXP for each hour. OwlTrack uses the last 30 minutes to calculate this value. |
+| **This session** | The EXP that you got since the session started, and the length of the session. |
+| **To Lv. N** | The time until the next level, at your current EXP/h. |
+
+## How OwlTrack gets the values
+
+OwlTrack reads the level, the character name and the EXP from the image of the game window. It does
+not read the memory, the files or the network traffic of the game. The text recognition (OCR) occurs
+on your computer.
+
+<Note>
+OwlTrack is free and open source (MIT license). It is a fan-made tool. NEXON does not make or approve
+OwlTrack.
+</Note>
 
 ## Requirements
 
-- Windows 10 or 11, 64-bit
-- The game running **windowed** or **borderless**. An overlay can't sit on top of exclusive fullscreen.
+- Windows 10 or Windows 11, 64-bit.
+- MapleStory in **windowed** mode or **borderless** mode. The overlay cannot show on top of a game in
+  exclusive fullscreen mode.
 
-## Where to next
+## Related pages
 
-- [Installation](#/installation): download and install, or use the portable exe
-- [Quick start](#/quick-start): calibrate once and start grinding
-- [Troubleshooting](#/troubleshooting): when the numbers don't show up
+- [Installation](#/installation): Install OwlTrack.
+- [Quick start](#/quick-start): Calibrate OwlTrack one time.
+- [Troubleshooting](#/troubleshooting): Find a solution for a problem.

@@ -1,19 +1,19 @@
 # Accuracy
 
-OCR is noisy, so every reading is sanity-checked before it counts.
+The OCR can make errors. Thus, OwlTrack examines each value before it uses the value.
 
-- **EXP and % must agree.** The EXP number and the percentage together imply how much EXP the level
-  needs. A misread digit breaks that, and the reading is thrown away.
-- **Surprises are confirmed.** The first reading of a session and any drop in EXP have to be seen
-  twice before they're accepted.
-- **Drops are classified.** A drop is either a **level-up** (the level went up, or the bar emptied)
-  or a **death**, which is counted as a loss.
-- **Stuck baselines fix themselves.** Three consistent readings that disagree with what OwlTrack
-  believes reset its baseline without counting the difference as EXP.
+| Check | Description |
+| --- | --- |
+| EXP and % must agree | The EXP value and the percentage together give the EXP that is necessary for the level. A digit that the OCR read incorrectly gives a different result. OwlTrack then ignores the value. |
+| Unusual values must show two times | OwlTrack must read the first value of a session two times before it uses it. The same rule applies when the EXP decreases. |
+| Decreases have a cause | When the EXP decreases, OwlTrack finds the cause. If the level increased or the EXP bar became empty, it is a **level-up**. Other decreases are a **death**, which OwlTrack counts as a loss. |
+| The baseline corrects itself | If three values agree with each other but not with the baseline, OwlTrack resets the baseline. It does not count the difference as EXP. |
 
-## When numbers look wrong
+## If the values are not correct
 
-- Check the region previews in **Calibrate**. The mask should be crisp black text on white.
-- Redraw boxes tighter, especially after changing resolution or UI scale.
-- If the name is slightly off, fix it once in **Overlay → Character name**.
-- **Reset session** from the tray if a session got off to a bad start.
+1. Open the **Calibrate** tab.
+2. Make sure that the preview of each region shows clear black text on a white background.
+3. If the preview is not clear, change the threshold or draw a tighter box.
+4. If you changed the resolution or the UI scale of the game, draw all the boxes again.
+5. If the name is not correct, correct it in **Overlay → Character name**.
+6. If the session started with incorrect values, click **Reset session** in the tray menu.

@@ -1,23 +1,29 @@
 # Privacy & security
 
-**OwlTrack works entirely offline.** It doesn't send anything anywhere: no telemetry, no update
-checks, no accounts. OCR runs locally with a bundled copy of Tesseract, and settings stay on your PC.
+**OwlTrack operates fully offline.** It does not send data to other computers. It has no telemetry,
+no update checks and no accounts. The OCR occurs on your computer, and your settings stay on your
+computer.
 
 > This program will not transfer any information to other networked systems unless specifically
 > requested by the user or the person installing or operating it.
 
-## What it reads
+## What OwlTrack reads
 
-Only the picture of the game window, and only the regions you draw are processed. It doesn't read
-game memory or files, inject anything into the game, or look at network traffic.
+OwlTrack reads only the image of the game window. It processes only the regions that you draw.
+
+OwlTrack does not do these actions:
+
+- Read the memory or the files of the game.
+- Put code into the game.
+- Read the network traffic of the game.
 
 ## Code signing
 
-Free code signing is provided by [SignPath.io](https://about.signpath.io), with a certificate by
-[SignPath Foundation](https://signpath.org). Only binaries built by the repository's CI from its
-source are signed, and every signing request is approved manually.
+[SignPath.io](https://about.signpath.io) gives free code signing. The certificate is from
+[SignPath Foundation](https://signpath.org). SignPath signs only the files that the CI of the
+repository makes from its source code. A person approves each signing request manually.
 
 ## Open source
 
-The full source is on [GitHub](https://github.com/sefi-uzan/owltrack) under the MIT license. Issues and
-pull requests are welcome.
+The full source code is on [GitHub](https://github.com/sefi-uzan/owltrack). The license is MIT. You
+can send issues and pull requests.

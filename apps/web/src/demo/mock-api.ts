@@ -1,23 +1,30 @@
 import type { Api, SettingsPatch } from '@shared/api'
-import { DEFAULT_SETTINGS, type RegionDebug, type Settings, type TrackerSnapshot } from '@shared/types'
+import {
+  DEFAULT_SETTINGS,
+  type RegionDebug,
+  type Settings,
+  type SystemOptions,
+  type TrackerSnapshot
+} from '@shared/types'
+import desktop from '../../../desktop/package.json'
 import { DEMO_REGIONS, FRAME, gameFrame, ocrMask } from './game-frame'
 
 /**
  * A stand-in for the Electron preload API, so the desktop app's own Overlay and Settings
- * components run in the browser. It simulates a grinding session: EXP ticks in, the rate and
+ * components (Overlay, Settings, Welcome) run in the browser. It simulates a grinding session: EXP ticks in, the rate and
  * time-to-level update, and every so often you level up. Nothing leaves the page.
  */
 
 const TICK_MS = 1500
-/** EXP per kill in the demo; ~2400 kills/h puts the rate around 300B/h. */
-const KILL_EXP = 125_000_000
+/** EXP per kill in the demo; ~2400 kills/h puts the rate around 10B/h. */
+const KILL_EXP = 4_300_000
 const MESOS_PER_KILL = 52
 
 const START = {
-  level: 247,
-  required: 2_215_000_000_000,
-  exp: 1_996_000_000_000,
-  session: 202_400_000_000,
+  level: 215,
+  required: 52_180_000_000,
+  exp: 43_270_000_000,
+  session: 7_412_000_000,
   sessionSeconds: 42 * 60 + 17,
   mesos: 4_180_000
 }
@@ -39,8 +46,11 @@ function emitter<T>() {
 
 let settings: Settings = {
   ...DEFAULT_SETTINGS,
-  regions: { ...DEMO_REGIONS }
+  regions: { ...DEMO_REGIONS },
+  setupDone: true
 }
+
+let system: SystemOptions = { packaged: true, version: desktop.version, openAtLogin: true, desktopShortcut: true }
 
 const state = {
   level: START.level,
@@ -151,7 +161,13 @@ const noop = (): void => undefined
 const never = (): (() => void) => noop
 
 /** Hooks the landing page uses to react to clicks inside the demo (e.g. the overlay's settings button). */
-export const demoEvents = { openSettings: emitter<void>() }
+export const demoEvents = { openSettings: emitter<void>(), finishSetup: emitter<boolean>() }
+
+/** Screenshot mode: show the app before calibration (welcome screen, empty Calibrate tab). */
+export function startUncalibrated(): void {
+  settings = { ...settings, regions: {}, setupDone: false }
+  system = { ...system, openAtLogin: false }
+}
 
 export const mockApi: Api = {
   getSettings: () => Promise.resolve(settings),
@@ -193,6 +209,11 @@ export const mockApi: Api = {
     queueMicrotask(() => emitDebug())
     return off
   },
+
+  getSystemOptions: () => Promise.resolve(system),
+  setOpenAtLogin: (on) => Promise.resolve((system = { ...system, openAtLogin: on })),
+  setDesktopShortcut: (on) => Promise.resolve((system = { ...system, desktopShortcut: on })),
+  finishSetup: (openSettings) => demoEvents.finishSetup.emit(openSettings),
 
   openSettings: () => demoEvents.openSettings.emit(),
   resizeOverlay: noop,

@@ -1,36 +1,67 @@
 # Installation
 
-Download the latest release from [GitHub Releases](https://github.com/sefi-uzan/owltrack/releases/latest).
-Each release has two files:
+The installer is `OwlTrack-Setup-x.y.z.exe`, where `x.y.z` is the version. The installer has no
+wizard. It installs OwlTrack only for your Windows user, so you do not need administrator rights.
 
-| File | What it is |
+## Install OwlTrack
+
+1. Download `OwlTrack-Setup-x.y.z.exe` from
+   [GitHub Releases](https://github.com/sefi-uzan/owltrack/releases/latest).
+2. Open the file that you downloaded.
+3. Wait until the progress bar is complete. The installer then starts OwlTrack.
+4. Make your selections on the welcome screen (refer to the next section).
+5. Click **Start calibrating**.
+6. Do the steps in [Quick start](#/quick-start).
+
+<Note>
+The installer puts OwlTrack in `%LOCALAPPDATA%\Programs\owltrack`. It also adds OwlTrack to the Start
+menu and puts a shortcut on the desktop.
+</Note>
+
+## The welcome screen
+
+The welcome screen shows one time, after the first installation.
+
+<Figure src="screenshots/welcome.png" alt="The OwlTrack setup window with two switches and a Start calibrating button" width={560}>
+  The welcome screen after the first installation
+</Figure>
+
+| Option | Description |
 | --- | --- |
-| `OwlTrack-Setup-x.y.z.exe` | The installer. Adds a Start menu entry and an uninstaller. |
-| `OwlTrack-Portable-x.y.z.exe` | Runs without installing. Keep it anywhere, e.g. next to your game. |
+| **Start with Windows** | OwlTrack starts in the system tray when you sign in to Windows. |
+| **Desktop shortcut** | Puts an OwlTrack shortcut on the desktop. OwlTrack is always in the Start menu. |
 
-Both are the same app, and release builds are code-signed (see [Privacy & security](#/privacy)).
+You can change these options at a later time in **Settings → Overlay → App**.
 
-## Installer
+If you install OwlTrack again and your calibration is available, the welcome screen tells you that
+OwlTrack kept your settings. Click **Done** to start to use OwlTrack, or click **Open settings**.
 
-1. Run `OwlTrack-Setup-x.y.z.exe`.
-2. Pick a folder (or keep the default) and finish the setup.
-3. Start **OwlTrack** from the Start menu. It lives in the system tray; the settings window opens the
-   first time so you can [calibrate](#/quick-start).
+<Figure src="screenshots/welcome-back.png" alt="The OwlTrack setup window that tells you that your settings and calibration were kept" width={560}>
+  The welcome screen after a new installation with a calibration
+</Figure>
 
-## Portable
+## Update OwlTrack
 
-Double-click `OwlTrack-Portable-x.y.z.exe`. That's it. Updating means downloading the new portable exe
-and deleting the old one.
+OwlTrack does not look for updates, because it does not connect to the internet.
 
-## Updating
+1. Download the new `OwlTrack-Setup-x.y.z.exe` from
+   [GitHub Releases](https://github.com/sefi-uzan/owltrack/releases/latest).
+2. Open the file. The installer replaces the old version.
 
-OwlTrack doesn't check for updates by itself (it never goes online). To update, download the new
-release and run it. Your settings and calibration are kept.
+The update keeps your settings and your calibration.
 
-## Uninstalling
+## Uninstall OwlTrack
 
-- **Installer:** remove OwlTrack from **Settings → Apps → Installed apps** (or "Add or remove
-  programs"), like any other app.
-- **Portable:** delete the exe.
+1. In Windows, open **Settings → Apps → Installed apps**.
+2. Find **OwlTrack** in the list.
+3. Click **⋯** and then click **Uninstall**.
 
-Settings and learned glyphs live in `%APPDATA%\OwlTrack`. Delete that folder to remove them too.
+The uninstaller also removes the **Start with Windows** entry.
+
+OwlTrack keeps your settings and the glyphs that it recorded in `%APPDATA%\OwlTrack`. To remove all
+data, delete this folder after you uninstall OwlTrack.
+
+<Caution>
+When you delete `%APPDATA%\OwlTrack`, you lose your calibration. You must calibrate OwlTrack again
+after the next installation.
+</Caution>

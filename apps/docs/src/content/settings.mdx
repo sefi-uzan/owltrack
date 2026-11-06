@@ -1,38 +1,71 @@
 # Settings
 
-Open the settings window from the tray menu (**Settings & calibration…**) or from the button on an
-unlocked overlay. The title bar always shows whether the game is being captured, and lets you change
-which window is captured.
+To open the settings window, do one of these procedures:
+
+- Right-click the OwlTrack icon in the system tray. Click **Settings & calibration…**.
+- Unlock the overlay and click the settings button on the overlay.
+
+The top of the settings window always shows the status of the capture. You can also change the game
+window there (refer to [Quick start](#/quick-start)).
 
 ## Overlay tab
 
-**Display**
+<Figure src="screenshots/overlay-tab.png" alt="The Overlay tab with the Display, Reading and App panels" width={1000}>
+  The **Overlay** tab
+</Figure>
 
-| Setting | What it does |
+### Display
+
+| Setting | Function |
 | --- | --- |
-| Show overlay | Same as <Kbd>Ctrl+Shift+H</Kbd>. |
-| Lock in place | Same as <Kbd>Ctrl+Shift+L</Kbd>. Clicks pass through to the game while locked. |
-| Size | 70% to 180%. |
-| Opacity | 30% to 100%. |
+| **Show overlay** | Shows or hides the overlay (the same as <Kbd>Ctrl+Shift+H</Kbd>). |
+| **Lock in place** | Locks or unlocks the overlay (the same as <Kbd>Ctrl+Shift+L</Kbd>). When the overlay is locked, your clicks go to the game. |
+| **Size** | Sets the size of the overlay, from 70% to 180%. |
+| **Opacity** | Sets the opacity of the overlay, from 30% to 100%. |
 
-**Reading**
+### Reading
 
-| Setting | What it does |
+| Setting | Function |
 | --- | --- |
-| Character name | Fixes OCR misreads of your name. Remembered per character. |
-| Capture rate | Frames per second taken from the game (1 to 10, default 4). Regions are only read when they change, so this mostly sets how quickly the overlay reacts. |
-| Count mesos | Experimental meso counting from the on-screen notices. |
+| **Character name** | Corrects the name that the OCR read. OwlTrack keeps the correction for each character. |
+| **Capture rate** | Sets how many images OwlTrack gets from the game each second (1 to 10, default 4). OwlTrack reads a region only when it changes. Thus, this setting mostly sets how fast the overlay shows a change. |
+| **Count mesos** | Counts the mesos from the meso notices (experimental). Refer to [Calibration](#/calibration). |
+
+### App
+
+| Setting | Function |
+| --- | --- |
+| **Start with Windows** | OwlTrack starts in the system tray when you sign in to Windows. |
+| **Desktop shortcut** | Puts an OwlTrack shortcut on the desktop, or removes it. |
+
+<Note>
+The **App** settings are available only in the installed app. They are not available when you run
+OwlTrack from the source code.
+</Note>
 
 ## Session tab
 
-A bigger view of the current session: character, level, EXP, session length, EXP gained, levels
-gained, EXP/hour, time to level and mesos. **Reset session** starts counting from zero.
+The **Session** tab shows the values of the current session. These values are the character, the
+level, the EXP, the session length, the EXP that you got, the levels that you got, the EXP/h, the time
+to the next level and the mesos.
 
-## Where settings are stored
+<Figure src="screenshots/session-tab.png" alt="The Session tab with nine values and a Reset session button" width={1000}>
+  The **Session** tab
+</Figure>
 
-Everything lives in `%APPDATA%\OwlTrack`:
+Click **Reset session** to set the session values to zero.
 
-- `settings.json`: window title, regions, thresholds and overlay preferences
-- `glyphs.json`: digit shapes OwlTrack learned from your game, see [How it works](#/how-it-works)
+## Location of the settings
 
-Delete the folder to start fresh.
+OwlTrack keeps its data in `%APPDATA%\OwlTrack`:
+
+| File | Contents |
+| --- | --- |
+| `settings.json` | The game window title, the regions, the thresholds and the overlay settings. |
+| `glyphs.json` | The digit shapes that OwlTrack recorded from your game (refer to [How it works](#/how-it-works)). |
+
+To start again with the default settings, stop OwlTrack and delete this folder.
+
+<Caution>
+When you delete `%APPDATA%\OwlTrack`, you lose your calibration. You must calibrate OwlTrack again.
+</Caution>

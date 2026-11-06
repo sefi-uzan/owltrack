@@ -8,6 +8,7 @@
     "build": "vite build",
     "dev": "vite",
     "preview": "vite preview",
+    "screenshots": "node scripts/screenshots.mjs",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {

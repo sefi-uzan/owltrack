@@ -22,6 +22,14 @@ OwlTrack: an always-on-top MapleStory EXP tracker overlay for Windows (Electron)
 - The app must stay offline. Adding any network call means updating the README privacy statement and
   asking the user first (SignPath requires a privacy policy and an opt-out for data transfer).
 
+## Docs and website
+
+- `apps/docs` pages are written in ASD-STE100 Simplified Technical English. Follow
+  `apps/docs/STYLE.md` when you add or change a page, and update the docs when user-visible behaviour changes.
+- `apps/web` renders the desktop renderer components against a simulated API (`apps/web/src/demo/mock-api.ts`).
+  When `Api` changes, update the mock. When the UI changes, regenerate the docs screenshots
+  (`npm run dev:web`, then `npm run screenshots -w @repo/docs`).
+
 ## Checks
 
 Run before pushing: `npm run check` (Biome), `npm run typecheck`, `npm test`. `npm run fix` auto-fixes lint/format.

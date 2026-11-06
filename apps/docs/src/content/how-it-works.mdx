@@ -1,34 +1,42 @@
 # How it works
 
-OwlTrack is built to run next to the game all day without you noticing it.
+OwlTrack can operate next to the game for a long time and use only a small quantity of computer
+resources.
 
 ## Capture
 
-The game window is streamed with Windows Graphics Capture at a few frames per second, capped at 1440p.
-The overlay itself is never part of the picture.
+OwlTrack gets a few images each second from the game window. It uses Windows Graphics Capture for
+this. The maximum resolution of the images is 1440p. The overlay is not in these images.
 
-Every frame, only the regions you calibrated are copied (on the GPU, into one small image) and read
-back once. Each region becomes a 1-bit text mask, and **OCR only runs when a region's mask changes**,
-which in practice means when the numbers change.
+For each image, OwlTrack copies only the regions that you calibrated. The graphics card copies them
+into one small image. OwlTrack then changes each region to a black-and-white text image.
 
-When nothing changes for 20 seconds (AFK, in town), capture drops to 2 fps, and goes back to full
-speed on the next change.
+OwlTrack reads the text (OCR) only when the text image of a region changes. Usually, this occurs
+only when a value changes.
 
-## Reading EXP
+If no region changes for 20 seconds, the capture rate decreases to 2 images each second. This occurs,
+for example, when you are away from the game. At the next change, the capture rate goes back to the
+usual rate.
 
-Text is read with [Tesseract](https://github.com/tesseract-ocr/tesseract), bundled with the app and
-running locally.
+## Text recognition
 
-EXP changes constantly, so it gets a faster path: a **self-learned glyph matcher**. Every time
-Tesseract produces a reading the tracker trusts, the image is cut into digits and each one is stored
-with the digit it turned out to be. After about a minute of grinding all ten digits are known, and
-from then on EXP is read in about a millisecond. Tesseract still reads the level and name, an
-occasional cross-check (every 100th EXP read) and any digit the matcher isn't sure about.
+OwlTrack uses [Tesseract](https://github.com/tesseract-ocr/tesseract) to read the text. Tesseract is
+part of OwlTrack and operates on your computer.
 
-The learned digits are saved in `glyphs.json`, so this only happens once.
+The EXP changes frequently. Thus, OwlTrack uses a faster procedure for the EXP:
 
-## Cost
+1. Tesseract reads the EXP, and the tracker accepts the value.
+2. OwlTrack cuts the image into digits. It records the shape of each digit with its value.
+3. After approximately one minute in the game, OwlTrack knows all ten digits.
+4. From then on, OwlTrack reads the EXP from the recorded shapes in approximately 1 ms.
 
-Measured against a 4K game window: about 3 ms of work per frame. The Tesseract worker shuts down after
-60 seconds unused and restarts on demand. Most of the memory use is Electron/Chromium and Windows'
-capture pipeline rather than OwlTrack itself.
+Tesseract continues to read the level, the name and the digits that are not clear. It also reads one
+EXP value in 100, to examine the recorded shapes.
+
+OwlTrack keeps the recorded shapes in `glyphs.json`. Thus, it records them only one time.
+
+## Resource usage
+
+With a 4K game window, OwlTrack uses approximately 3 ms for each image. Tesseract stops after 60
+seconds without use. It starts again when OwlTrack needs it. Electron, Chromium and the Windows capture
+use most of the memory, not OwlTrack.

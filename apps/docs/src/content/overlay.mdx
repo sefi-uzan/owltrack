@@ -1,37 +1,70 @@
 # The overlay
 
-The overlay sits on top of the game and shows your level, the EXP bar and four numbers:
+The overlay shows on top of the game window. It shows your level, the EXP bar and four values.
 
-| Stat | Meaning |
+<Figure src="screenshots/overlay.png" alt="The OwlTrack overlay, locked" width={372}>
+  The overlay
+</Figure>
+
+| Value | Description |
 | --- | --- |
-| **Last 5 min** | Net EXP gained in the last five minutes. |
-| **EXP/h · 30m** | EXP per hour over the last 30 minutes, or the whole session if it's shorter. |
-| **This session** | Net EXP since the session started, with the session length. |
-| **To Lv. N** | Time to the next level at the current rate. |
+| **Last 5 min** | The EXP that you got in the last 5 minutes. |
+| **EXP/h · 30m** | Your EXP for each hour, from the last 30 minutes. If the session is shorter than 30 minutes, OwlTrack uses the full session. |
+| **This session** | The EXP that you got since the session started, and the length of the session. |
+| **To Lv. N** | The time until the next level, at your current EXP/h. |
 
-The dot in the header is green while the game is being captured, amber while OwlTrack is looking for
-it, and red on errors. A status line explains what's going on when nothing can be read yet.
+## Status dot
+
+The dot in the top-left corner of the overlay shows the status of the capture.
+
+| Color | Status |
+| --- | --- |
+| Green | OwlTrack captures the game window. |
+| Amber | OwlTrack looks for the game window. |
+| Red | An error occurred. |
+
+When OwlTrack cannot read the values, a line below the EXP bar tells you the cause.
 
 ## Shortcuts
 
-| Shortcut | Action |
+| Shortcut | Function |
 | --- | --- |
-| <Kbd>Ctrl+Shift+L</Kbd> | Lock or unlock the overlay. Locked means click-through: clicks go to the game. |
-| <Kbd>Ctrl+Shift+H</Kbd> | Show or hide the overlay. |
+| <Kbd>Ctrl+Shift+L</Kbd> | Locks or unlocks the overlay. |
+| <Kbd>Ctrl+Shift+H</Kbd> | Shows or hides the overlay. |
 
-Unlock it to drag it somewhere else. While it's unlocked it gets a dashed gold outline and a settings
-button. Lock it again when you're done so it can't steal clicks from the game.
+When the overlay is locked, your clicks go through the overlay to the game.
+
+## Move the overlay
+
+1. Push <Kbd>Ctrl+Shift+L</Kbd> to unlock the overlay. A dashed gold line shows around the overlay.
+2. Drag the overlay to the new position.
+3. Push <Kbd>Ctrl+Shift+L</Kbd> to lock the overlay.
+
+<Figure src="screenshots/overlay-unlocked.png" alt="The unlocked overlay with a dashed gold line, a move icon and a settings button" width={372}>
+  The unlocked overlay
+</Figure>
+
+<Note>
+Lock the overlay after you move it. An unlocked overlay can stop your clicks on the game.
+</Note>
+
+When the overlay is unlocked, it also shows a settings button. Click this button to open the settings
+window.
 
 ## Tray menu
 
-Right-click the OwlTrack icon in the system tray for:
+Right-click the OwlTrack icon in the system tray. The menu has these items:
 
-- **Show overlay** and **Lock overlay (click-through)**, the same toggles as the shortcuts
-- **Settings & calibration…**
-- **Reset session**, to start counting from zero
-- **Quit OwlTrack**
+| Item | Function |
+| --- | --- |
+| **Show overlay** | Shows or hides the overlay (the same as <Kbd>Ctrl+Shift+H</Kbd>). |
+| **Lock overlay (click-through)** | Locks or unlocks the overlay (the same as <Kbd>Ctrl+Shift+L</Kbd>). |
+| **Settings & calibration…** | Opens the settings window. |
+| **Reset session** | Sets the session values to zero. |
+| **Quit OwlTrack** | Stops OwlTrack. |
 
 ## Sessions
 
-A session starts when OwlTrack first reads your EXP and keeps going until you reset it or quit.
-Level-ups are handled, and deaths are counted as a loss. See [Accuracy](#/accuracy) for how.
+A session starts when OwlTrack reads your EXP for the first time. The session continues until you
+reset it or stop OwlTrack. OwlTrack identifies level-ups. It counts a death as a loss of EXP. For more
+data, refer to [Accuracy](#/accuracy).

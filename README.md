@@ -115,7 +115,11 @@ release's installer and falls back to the releases page. (The desktop app itself
 
 The web app renders the desktop renderer components directly (`@desktop/*`, `@shared/*` aliases), so
 changes to the overlay or settings window show up on the site too. Tailwind only scans the app being
-built, so `apps/web/src/site.css` adds the desktop renderer as a `@source`.
+built, so `apps/web/src/site.css` adds the desktop renderer as a `@source`. `?shot=<name>` renders a single
+window (see `apps/web/src/Shot.tsx`); `npm run screenshots -w @repo/docs` captures those into the docs
+while `npm run dev:web` runs.
+
+The docs are written in ASD-STE100 Simplified Technical English; see [apps/docs/STYLE.md](apps/docs/STYLE.md).
 
 Add shadcn components from the ui package so both the file and its dependencies land there:
 `cd packages/ui && npx shadcn@latest add dialog`. (Running it from `apps/desktop` writes the file to

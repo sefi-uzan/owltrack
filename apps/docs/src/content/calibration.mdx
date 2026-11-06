@@ -1,40 +1,67 @@
 # Calibration
 
-The **Calibrate** tab shows a frame from the game on the left and the regions on the right. The badge
-next to **Calibrate** in the sidebar counts how many of the three required regions are set.
+Use the **Calibrate** tab of the settings window to tell OwlTrack where the regions are. The badge
+next to **Calibrate** shows how many of the three necessary regions are set.
 
-## Drawing a region
+<Figure src="screenshots/calibrate.png" alt="The Calibrate tab with the game image on the left and the Regions list on the right" width={1000}>
+  The **Calibrate** tab
+</Figure>
 
-Select a region in the list and drag a box on the frame. Boxes are stored relative to the game
-window, so they survive moving the window. If you change the game's resolution or UI scale, redraw
-them.
+## Controls
 
-- **Grab frame** takes a fresh picture of the game, e.g. after you moved the camera or closed a menu.
-- The zoom slider enlarges the frame so you can draw precisely.
-- The bin icon clears a region.
+| Control | Function |
+| --- | --- |
+| **Grab frame** | Gets a new image of the game window. |
+| Zoom slider | Makes the image larger, so that you can draw more accurately. |
+| **Threshold** | Sets the brightness limit between the text and the background. |
+| Bin icon | Removes the box of the selected region. |
 
-## Thresholds
+## Draw a region again
 
-OCR doesn't read the game's colours directly. Each region is turned into a black-and-white "text
-mask", and the threshold is the brightness cut-off between text and background. The preview under a
-region is exactly that mask.
+OwlTrack keeps the boxes relative to the game window. If you move the game window, the boxes stay
+correct.
 
-- Letters broken up or missing: **lower** the threshold.
-- Background showing up as black blobs: **raise** it.
+If you change the resolution or the UI scale of the game, draw all the boxes again:
 
-The defaults work for most setups. The name uses a low cut-off on purpose: thin strokes like the
-crossbar of an `f` disappear above ~120.
+1. Click **Grab frame**.
+2. In the **Regions** list, click the region.
+3. On the image, drag a new box around the region.
+4. Do steps 2 and 3 again for each region.
 
-## Fixing the character name
+## Adjust the threshold
 
-OCR sometimes confuses look-alike letters in the game font (`f`/`t`, `l`/`I`). Fix the name once in
-**Overlay → Character name**, or hover the name on the overlay and click the pencil. The fix is stored
-for the spelling OCR detected, so it sticks for that character only.
+OwlTrack changes each region to a black-and-white image before it reads the text. The threshold is
+the brightness limit between the text and the background. The preview below the region shows this
+black-and-white image.
 
-## Meso notices (experimental)
+| Problem in the preview | Action |
+| --- | --- |
+| Letters have gaps or are missing. | Decrease the threshold. |
+| The background shows as black areas. | Increase the threshold. |
 
-Turn on **Count mesos** (the switch next to **Meso notices**, or in the Overlay tab) and draw a box
-around the "You have gained mesos (+52)" lines on the right of the screen.
+The default values are correct for most computers. The default threshold of **Job + name** is low
+because thin lines, for example the bar of the letter `f`, are lost above 120.
 
-This is approximate: lines the OCR can't read cleanly are skipped, so it undercounts. EXP always comes
-from the status bar, never from notices, and item drops aren't tracked.
+## Correct the character name
+
+The OCR can mix letters that look almost the same in the game font, for example `f` and `t`, or `l`
+and `I`. To correct the name, do one of these procedures:
+
+- In the settings window, open **Overlay**. Type the correct name in **Character name**.
+- On the overlay, move the pointer to the name. Click the pencil icon and type the correct name.
+
+OwlTrack keeps the correction for the name that it read. The correction applies only to that
+character.
+
+## Count mesos (experimental)
+
+OwlTrack can count the mesos from the "You have gained mesos (+52)" notices on the right of the screen.
+
+1. In the **Regions** list, set the switch next to **Meso notices** to on.
+2. On the image, drag a box around the meso notices.
+
+<Note>
+The meso count is not exact. OwlTrack ignores the notices that the OCR cannot read clearly, so the
+count is lower than the real value. OwlTrack does not count item drops. The EXP always comes from the
+EXP bar, not from the notices.
+</Note>

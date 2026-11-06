@@ -1,5 +1,5 @@
 import { cn } from '@repo/ui/lib/utils'
-import { Info } from 'lucide-react'
+import { Info, TriangleAlert } from 'lucide-react'
 import type { MDXComponents } from 'mdx/types'
 import type * as React from 'react'
 
@@ -16,12 +16,48 @@ function Link({ href = '', className, ...props }: React.ComponentProps<'a'>) {
   )
 }
 
-function Callout({ children }: { children: React.ReactNode }) {
+/** STE (ASD-STE100) notices: NOTE gives information, CAUTION prevents loss of data or settings. */
+const NOTICES = {
+  note: { icon: Info, label: 'Note', box: 'border-maple-gold/30 bg-maple-gold/[0.06]', text: 'text-maple-gold' },
+  caution: { icon: TriangleAlert, label: 'Caution', box: 'border-red-400/40 bg-red-500/[0.08]', text: 'text-red-300' }
+}
+
+function Notice({ type, children }: { type: keyof typeof NOTICES; children: React.ReactNode }) {
+  const n = NOTICES[type]
   return (
-    <div className="my-6 flex gap-3 rounded-lg border border-maple-gold/30 bg-maple-gold/[0.06] px-4 py-3 text-[15px] leading-relaxed [&_p]:my-0">
-      <Info className="mt-1 size-4 shrink-0 text-maple-gold" />
-      <div>{children}</div>
+    <div className={cn('my-6 flex gap-3 rounded-lg border px-4 py-3 text-[15px] leading-relaxed [&_p]:my-0', n.box)}>
+      <n.icon className={cn('mt-1 size-4 shrink-0', n.text)} />
+      <div>
+        <span className={cn('mr-1.5 font-bold tracking-wide uppercase', n.text)}>{n.label}:</span>
+        {children}
+      </div>
     </div>
+  )
+}
+
+/** A screenshot at its real window size (the PNGs are 2x), shrunk to fit narrow screens. */
+function Figure({
+  src,
+  alt,
+  width,
+  children
+}: {
+  src: string
+  alt: string
+  width: number
+  children?: React.ReactNode
+}) {
+  return (
+    <figure className="my-8">
+      <img
+        src={src}
+        alt={alt}
+        width={width}
+        loading="lazy"
+        className="mx-auto block h-auto max-w-full rounded-lg shadow-[0_10px_30px_rgba(0,0,0,0.45)]"
+      />
+      {children && <figcaption className="mt-3 text-center text-sm text-maple-muted">{children}</figcaption>}
+    </figure>
   )
 }
 
@@ -67,5 +103,7 @@ export const mdxComponents: MDXComponents = {
       {...props}
     />
   ),
-  Callout
+  Note: ({ children }: { children: React.ReactNode }) => <Notice type="note">{children}</Notice>,
+  Caution: ({ children }: { children: React.ReactNode }) => <Notice type="caution">{children}</Notice>,
+  Figure
 }

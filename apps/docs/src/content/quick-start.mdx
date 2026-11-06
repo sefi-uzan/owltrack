@@ -1,30 +1,72 @@
 # Quick start
 
-You calibrate OwlTrack once: you show it where the level, name and EXP are on your screen. After that
-it just runs.
+You calibrate OwlTrack one time. During the calibration, you show OwlTrack where the EXP, the level
+and the name are on the screen.
 
-1. **Run the game windowed or borderless.**
-2. **Start OwlTrack.** The first time, the settings window opens on the **Calibrate** tab.
-3. **Find the game window.** OwlTrack looks for a window whose title contains `MapleStory`. If yours is
-   different, type part of its title in the box at the top right, or click **Pick** and choose it from
-   the list. The dot turns green and says **Capturing** once it's connected.
-4. **Draw the regions.** Pick a region on the right and drag a tight box around it on the game frame.
-   OwlTrack moves on to the next one by itself.
-5. **Check the previews.** Each region shows exactly what the OCR sees and what it parsed. If the
-   text isn't crisp black on white, nudge its **Threshold** slider.
+## Before you start
 
-| Region | Draw a box around |
+- Install OwlTrack (refer to [Installation](#/installation)).
+- Start MapleStory in **windowed** mode or **borderless** mode.
+
+## Connect to the game window
+
+1. Open the settings window. After the first installation, the welcome screen opens it for you.
+   At other times, right-click the OwlTrack icon in the system tray and click **Settings & calibration…**.
+2. Look at the top-right corner of the settings window.
+3. Make sure that the dot is green and that the text **Capturing** shows.
+
+If the dot is not green, OwlTrack did not find the game window. Do these steps:
+
+1. Click **Pick**.
+2. In the list, click the game window.
+
+<Figure src="screenshots/pick-window.png" alt="The settings window with the Pick list open. The list shows MapleStory, OwlTrack Settings and Discord" width={1000}>
+  Select the game window with **Pick**
+</Figure>
+
+## Draw the regions
+
+The **Calibrate** tab shows an image of the game window. You draw a box around each of the three
+regions in the table.
+
+| Region | Draw the box around |
 | --- | --- |
-| **EXP numbers** | Just the numbers, e.g. `66.380[15.50%]`. Leave out the `EXP` label. |
-| **Level** | Only the orange digit tiles, not the `LV.` text. |
-| **Job + name** | Both lines next to the level: job on top, name below. |
-| **Meso notices** | Optional and experimental, see [Calibration](#/calibration). |
+| **EXP numbers** | Only the numbers, for example `66.380[15.50%]`. Do not include the `EXP` label. |
+| **Level** | Only the orange digit tiles. Do not include the `LV.` text. |
+| **Job + name** | The two lines next to the level: the job on top and the name below. |
 
-That's it. Close the settings window; the overlay keeps running from the tray.
+<Figure src="screenshots/calibrate-empty.png" alt="The Calibrate tab before calibration. All regions show not set" width={1000}>
+  The **Calibrate** tab before calibration
+</Figure>
 
-<Callout>
-On a high-resolution screen, use the zoom slider above the frame to draw tight boxes. Tight boxes read
-better and faster.
-</Callout>
+1. In the **Regions** list, click **EXP numbers**.
+2. On the image, drag a tight box around the EXP numbers.
+3. Do steps 1 and 2 again for **Level** and **Job + name**.
 
-Next time, OwlTrack starts straight away: it finds the game, reads the bar and starts counting.
+<Note>
+After you draw a box, OwlTrack selects the next region in the list.
+</Note>
+
+## Examine the result
+
+1. In the **Regions** list, click each region.
+2. Look at the preview below the region name.
+3. Make sure that the preview shows black text on a white background.
+4. Make sure that the value next to the preview is correct.
+
+If the preview is not clear, change the **Threshold** of the region (refer to
+[Calibration](#/calibration)).
+
+<Figure src="screenshots/calibrate.png" alt="The Calibrate tab after calibration. Boxes show around the level, the name and the EXP numbers" width={1000}>
+  The **Calibrate** tab after calibration
+</Figure>
+
+When the three regions show **set**, the calibration is complete. Close the settings window. The
+overlay continues to operate, and OwlTrack stays in the system tray.
+
+<Note>
+On a high-resolution screen, use the zoom slider above the image. Tight boxes give better and faster
+results.
+</Note>
+
+The next time that you start OwlTrack, it finds the game, reads the EXP bar and starts to count.

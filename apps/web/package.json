@@ -11,6 +11,7 @@
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
+    "@repo/desktop": "*",
     "@repo/ui": "*",
     "@tailwindcss/vite": "^4.3.4",
     "@types/react": "^19.3.0",

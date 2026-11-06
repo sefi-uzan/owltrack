@@ -1,42 +1,75 @@
 # Troubleshooting
 
-## "Looking for the game window…"
+Find the problem in the list. Then do the steps below the problem.
 
-OwlTrack can't find a window whose title contains the text in the title bar box (default
-`MapleStory`).
+## The overlay shows "Looking for the game window…"
 
-- Make sure the game is running and not minimized.
-- Click **Pick** in the settings window and choose the game from the list.
+OwlTrack cannot find a window with a title that contains the text in the title box. The default
+text is `MapleStory`.
 
-## The overlay isn't on top of the game
+1. Make sure that the game operates and that its window is not minimized.
+2. Open the settings window.
+3. Click **Pick**.
+4. In the list, click the game window.
 
-The game is probably in exclusive fullscreen. Switch it to **windowed** or **borderless**.
+<Figure src="screenshots/pick-window.png" alt="The settings window with the Pick list open" width={1000}>
+  Select the game window with **Pick**
+</Figure>
 
-## "No frame received"
+## The overlay does not show on top of the game
 
-The game window is minimized or hidden. Restore it and click **Grab frame**.
+The game is possibly in exclusive fullscreen mode.
 
-## "Not calibrated"
+1. In the game settings, set the display mode to **windowed** or **borderless**.
 
-At least one of **EXP numbers**, **Level** and **Job + name** isn't set yet. Open **Settings &
-calibration…** from the tray and draw the missing boxes. See [Quick start](#/quick-start).
+## The Calibrate tab shows "No frame received"
 
-## The EXP doesn't update, or jumps around
+The game window is minimized or hidden.
 
-- Open **Calibrate** and check the EXP preview: it should show only the numbers, in crisp black on
-  white. Adjust the threshold or redraw the box.
-- Make sure the box doesn't include the `EXP` label.
-- After changing the game's resolution or UI scale, redraw all boxes.
+1. Restore the game window.
+2. Click **Grab frame**.
 
-## The overlay doesn't react to clicks
+## The overlay shows "Not calibrated"
 
-It's locked (click-through) on purpose. Press <Kbd>Ctrl+Shift+L</Kbd> to unlock it.
+One or more of the regions **EXP numbers**, **Level** and **Job + name** do not have a box.
 
-## Starting over
+1. Right-click the OwlTrack icon in the system tray.
+2. Click **Settings & calibration…**.
+3. Draw the missing boxes (refer to [Quick start](#/quick-start)).
 
-Quit OwlTrack and delete `%APPDATA%\OwlTrack`. The next start opens calibration again.
+## The EXP does not change, or it is not correct
 
-## Still stuck?
+1. Open the **Calibrate** tab.
+2. Click **EXP numbers**.
+3. Make sure that the preview shows only the numbers, in clear black text on a white background.
+4. Make sure that the box does not include the `EXP` label.
+5. If the preview is not clear, change the threshold or draw the box again.
 
-[Open an issue](https://github.com/sefi-uzan/owltrack/issues) with what you see. A screenshot of the
-Calibrate tab helps a lot.
+If you changed the resolution or the UI scale of the game, draw all the boxes again.
+
+## The overlay does not accept clicks
+
+The overlay is locked. When the overlay is locked, your clicks go to the game.
+
+1. Push <Kbd>Ctrl+Shift+L</Kbd> to unlock the overlay.
+
+## Start with Windows or Desktop shortcut cannot be changed
+
+These settings are available only in the installed app. They are not available when you run OwlTrack
+from the source code.
+
+## Start again with the default settings
+
+<Caution>
+This procedure removes your calibration and the digit shapes that OwlTrack recorded.
+</Caution>
+
+1. Right-click the OwlTrack icon in the system tray.
+2. Click **Quit OwlTrack**.
+3. Delete the folder `%APPDATA%\OwlTrack`.
+4. Start OwlTrack. The calibration starts again.
+
+## Other problems
+
+[Open an issue](https://github.com/sefi-uzan/owltrack/issues) on GitHub. Tell us what occurs. A
+screenshot of the **Calibrate** tab helps us to find the cause.

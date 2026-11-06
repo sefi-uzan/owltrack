@@ -135,6 +135,12 @@ function ScaledWindow({ width, height, children }: { width: number; height: numb
   )
 }
 
+const SETUP_STEPS = [
+  'Download and run OwlTrack-Setup.exe.',
+  'Choose Start with Windows and a desktop shortcut.',
+  'Draw three boxes around your EXP, level and name. That is all.'
+]
+
 const FEATURES = [
   {
     icon: ScanText,
@@ -173,7 +179,19 @@ export function App() {
   const release = useLatestRelease()
   const settingsRef = useRef<HTMLElement>(null)
 
-  useEffect(() => demoEvents.openSettings.on(() => settingsRef.current?.scrollIntoView({ behavior: 'smooth' })), [])
+  useEffect(() => {
+    const toSettings = (): void => settingsRef.current?.scrollIntoView({ behavior: 'smooth' })
+    const a = demoEvents.openSettings.on(toSettings)
+    const onMessage = (e: MessageEvent): void => {
+      if (e.origin === window.location.origin && e.data === 'owltrack:finishSetup') toSettings()
+    }
+    window.addEventListener('message', onMessage)
+    const b = (): void => window.removeEventListener('message', onMessage)
+    return () => {
+      a()
+      b()
+    }
+  }, [])
 
   return (
     <div className="min-h-full bg-[radial-gradient(ellipse_at_top,#232b40,#121621_60%)]">
@@ -201,20 +219,47 @@ export function App() {
               </Button>
               <Button asChild size="lg" variant="ghost">
                 <a href={DOCS_URL}>
-                  <BookOpen /> Read the docs
+                  <BookOpen /> Docs
                 </a>
               </Button>
             </div>
             <p className="mt-4 text-xs text-maple-muted">
-              Installer for Windows x64. Prefer not to install?{' '}
+              One-click installer for Windows x64. No admin rights needed.{' '}
               <a className="text-maple-gold underline-offset-4 hover:underline" href={RELEASES_URL}>
-                Grab the portable exe
+                All releases
               </a>
-              .
             </p>
           </div>
 
           <GameScene settings={settings} snap={snap} />
+        </section>
+
+        <section className="mx-auto grid max-w-6xl items-center gap-10 px-5 pb-20 lg:grid-cols-[minmax(0,1fr)_560px]">
+          <div>
+            <h2 className="maple-title text-2xl font-black tracking-wide">Installed in one click</h2>
+            <p className="mt-2 max-w-xl text-maple-muted">
+              No wizard and no admin prompt. The installer puts OwlTrack in your user folder and starts it. Then this
+              welcome screen lets you pick your options and takes you to calibration.
+            </p>
+            <ol className="mt-6 flex flex-col gap-3">
+              {SETUP_STEPS.map((step, i) => (
+                <li key={step} className="flex items-start gap-3">
+                  <span className="grid size-6 shrink-0 place-items-center rounded-md border border-[#a8580c] bg-gradient-to-b from-[#ffd463] to-[#e57f12] text-xs font-black text-white [text-shadow:0_1px_1px_rgba(90,40,0,0.8)]">
+                    {i + 1}
+                  </span>
+                  <span className="text-foreground/90">{step}</span>
+                </li>
+              ))}
+            </ol>
+          </div>
+          <ScaledWindow width={560} height={520}>
+            <iframe
+              src="?shot=welcome&embed"
+              sandbox="allow-scripts allow-same-origin"
+              title="OwlTrack welcome screen"
+              className="block size-full border-0"
+            />
+          </ScaledWindow>
         </section>
 
         <section ref={settingsRef} className="scroll-mt-20 border-y border-maple-edge bg-black/20 py-16">
