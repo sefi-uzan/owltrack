@@ -1,0 +1,40 @@
+appId: com.sefiuzan.exptracker
+productName: EXP Tracker
+directories:
+  buildResources: build
+  output: dist
+files:
+  - out/**
+  - resources/**
+  - package.json
+  - '!**/*.map'
+asarUnpack:
+  # tesseract.js spawns a worker_thread from its own folder; keep it (and what it loads) on real disk
+  - node_modules/tesseract.js/**
+  - node_modules/tesseract.js-core/**
+  - node_modules/@tesseract.js-data/**
+  - node_modules/regenerator-runtime/**
+  - node_modules/is-url/**
+  - node_modules/bmp-js/**
+  - node_modules/zlibjs/**
+  - node_modules/wasm-feature-detect/**
+  - node_modules/node-fetch/**
+  - node_modules/whatwg-url/**
+  - node_modules/tr46/**
+  - node_modules/webidl-conversions/**
+  - node_modules/idb-keyval/**
+  - resources/**
+win:
+  icon: build/icon.ico
+  target:
+    - target: nsis
+      arch: [x64]
+    - target: portable
+      arch: [x64]
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  artifactName: ${productName}-Setup-${version}.${ext}
+portable:
+  artifactName: ${productName}-Portable-${version}.${ext}
+npmRebuild: false
