@@ -27,7 +27,7 @@ function useSettings(): Settings | null {
 function LevelBadge({ level }: { level?: number }) {
   const digits = level !== undefined ? String(level).split('') : ['?', '?']
   return (
-    <div className="flex h-8 shrink-0 items-center gap-1 rounded-lg bg-[#2b2d31] px-2 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)]">
+    <div className="flex h-8 shrink-0 items-center gap-1 rounded-lg bg-maple-inset px-2 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08),inset_0_1px_3px_rgba(0,0,0,0.5)]">
       <span className="pr-0.5 text-[13px] font-black italic tracking-tight text-white">LV.</span>
       {digits.map((d, i) => (
         <span
@@ -44,7 +44,7 @@ function LevelBadge({ level }: { level?: number }) {
 function ExpBar({ exp, percent }: { exp?: number; percent?: number }) {
   const width = percent !== undefined ? Math.max(0, Math.min(100, percent)) : 0
   return (
-    <div className="relative h-8 min-w-0 flex-1 overflow-hidden rounded-lg bg-[#45484e] shadow-[inset_0_1px_3px_rgba(0,0,0,0.45)] ring-1 ring-black/30">
+    <div className="relative h-8 min-w-0 flex-1 overflow-hidden rounded-lg bg-maple-inset shadow-[inset_0_1px_3px_rgba(0,0,0,0.6)] ring-1 ring-white/[0.08]">
       <div
         className="absolute inset-y-0 left-0 rounded-lg bg-gradient-to-b from-[#c8f25a] via-[#98d42a] to-[#6fae16] transition-[width] duration-700 ease-out"
         style={{ width: `${width}%` }}
@@ -60,11 +60,11 @@ function ExpBar({ exp, percent }: { exp?: number; percent?: number }) {
   )
 }
 
-function Stat({ label, value, className }: { label: string; value: string; className?: string }) {
+function Stat({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
   return (
-    <div className={cn('min-w-0 px-3 py-2', className)}>
-      <div className="truncate text-[10px] font-semibold tracking-[0.08em] text-ink-muted uppercase">{label}</div>
-      <div className="truncate text-[19px] leading-tight font-extrabold text-ink tabular-nums">{value}</div>
+    <div className="min-w-0 rounded-md bg-maple-inset px-2.5 py-1.5 shadow-[inset_0_1px_3px_rgba(0,0,0,0.55)] ring-1 ring-white/[0.06]">
+      <div className="truncate text-[10px] font-semibold tracking-[0.08em] text-maple-muted uppercase">{label}</div>
+      <div className={cn('truncate text-[19px] leading-tight font-extrabold tabular-nums text-white', accent && 'text-maple-gold')}>{value}</div>
     </div>
   )
 }
@@ -180,12 +180,12 @@ export function Overlay() {
     <div ref={ref} className="w-[340px] p-1.5" style={unlocked ? ({ WebkitAppRegion: 'drag' } as React.CSSProperties) : undefined}>
       <div
         className={cn(
-          'overflow-hidden rounded-xl border-2 border-frame bg-cream shadow-[0_6px_18px_rgba(0,0,0,0.35)]',
-          unlocked && 'outline-2 outline-offset-2 outline-dashed outline-[#ffd27a]'
+          'overflow-hidden rounded-[10px] border border-maple-edge bg-maple-panel/95 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.09),0_6px_18px_rgba(0,0,0,0.45)]',
+          unlocked && 'outline-2 outline-offset-2 outline-dashed outline-maple-gold'
         )}
       >
         {/* Header */}
-        <div className="flex items-center gap-2 bg-gradient-to-b from-frame to-frame-dark px-3 py-1.5 text-[#fff3df]">
+        <div className="flex items-center gap-2 border-b border-black/50 bg-gradient-to-b from-[#46506c] to-maple-head px-3 py-1.5 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.14)]">
           <span
             className={cn(
               'size-2 shrink-0 rounded-full ring-2 ring-black/15',
@@ -193,7 +193,7 @@ export function Overlay() {
             )}
             title={snap?.capture.windowName ?? 'Not capturing'}
           />
-          <span className="text-[11px] font-extrabold tracking-[0.14em]">EXP TRACKER</span>
+          <span className="maple-title text-[11px] font-black tracking-[0.14em]">EXP TRACKER</span>
           <CharacterName snap={snap} settings={settings} />
           {unlocked && (
             <>
@@ -217,15 +217,15 @@ export function Overlay() {
         </div>
 
         {message && (
-          <div className="mx-2.5 mb-2 truncate rounded-md bg-[#efe3d0] px-2 py-1 text-[11px] font-medium text-ink-muted">
+          <div className="mx-2.5 mb-2 truncate rounded-md bg-black/30 px-2 py-1 text-[11px] font-medium text-maple-muted ring-1 ring-white/5">
             {message}
           </div>
         )}
 
         {/* Story 2: 2x2 stats */}
-        <div className="grid grid-cols-2 border-t border-[#e7d9c4] [&>*:nth-child(odd)]:border-r [&>*:nth-child(odd)]:border-[#e7d9c4] [&>*:nth-child(-n+2)]:border-b">
+        <div className="grid grid-cols-2 gap-1.5 px-2.5 pb-2.5">
           <Stat label="Last 5 min" value={signedCompact(snap?.last5m)} />
-          <Stat label="EXP/h · 30m" value={compact(snap?.ratePerHour)} />
+          <Stat label="EXP/h · 30m" value={compact(snap?.ratePerHour)} accent />
           <Stat
             label={`This session${snap && snap.sessionSeconds > 0 ? ` · ${duration(snap.sessionSeconds)}` : ''}`}
             value={signedCompact(snap?.session)}
@@ -237,10 +237,10 @@ export function Overlay() {
         </div>
 
         {snap?.noticesEnabled && (
-          <div className="flex items-center gap-2 border-t border-[#e7d9c4] bg-[#f6ecdc] px-3 py-1.5 text-[11px] text-ink-muted">
-            <Coins className="size-3.5 shrink-0 text-[#c9962b]" />
+          <div className="flex items-center gap-2 border-t border-black/40 bg-black/20 px-3 py-1.5 text-[11px] text-maple-muted">
+            <Coins className="size-3.5 shrink-0 text-maple-gold" />
             <span className="font-semibold tracking-[0.08em] uppercase">Mesos</span>
-            <span className="ml-auto font-bold text-ink tabular-nums" title="Approximate: notice lines the OCR can't read cleanly are skipped, so this undercounts">
+            <span className="ml-auto font-bold text-maple-gold tabular-nums" title="Approximate: notice lines the OCR can't read cleanly are skipped, so this undercounts">
               ≈ +{compact(snap.mesos.session)}
             </span>
             <span className="tabular-nums">· {compact(snap.mesos.ratePerHour)}/h</span>

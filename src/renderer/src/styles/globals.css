@@ -25,25 +25,26 @@
   --ring: oklch(0.709 0.01 56.259);
 }
 
+/* MapleStory window palette: slate-navy panels, gold titles, orange buttons */
 .dark {
-  --background: oklch(0.17 0.006 56);
-  --foreground: oklch(0.985 0.001 106.423);
-  --card: oklch(0.216 0.006 56.043);
-  --card-foreground: oklch(0.985 0.001 106.423);
-  --popover: oklch(0.216 0.006 56.043);
-  --popover-foreground: oklch(0.985 0.001 106.423);
-  --primary: oklch(0.72 0.16 58);
-  --primary-foreground: oklch(0.18 0.02 56);
-  --secondary: oklch(0.268 0.007 34.298);
-  --secondary-foreground: oklch(0.985 0.001 106.423);
-  --muted: oklch(0.268 0.007 34.298);
-  --muted-foreground: oklch(0.709 0.01 56.259);
-  --accent: oklch(0.268 0.007 34.298);
-  --accent-foreground: oklch(0.985 0.001 106.423);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.553 0.013 58.071);
+  --background: #141824;
+  --foreground: #eef1f7;
+  --card: #1f2433;
+  --card-foreground: #eef1f7;
+  --popover: #1f2433;
+  --popover-foreground: #eef1f7;
+  --primary: #f5a623;
+  --primary-foreground: #2b1a04;
+  --secondary: #2c3347;
+  --secondary-foreground: #eef1f7;
+  --muted: #2a3042;
+  --muted-foreground: #96a2ba;
+  --accent: #323a51;
+  --accent-foreground: #ffffff;
+  --destructive: #ef5350;
+  --border: #363e55;
+  --input: #3d4660;
+  --ring: #f5a623;
 }
 
 @theme inline {
@@ -70,12 +71,14 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
 
-  /* Overlay palette: warm brown frame, cream body, dark level badge, green EXP bar */
-  --color-frame: #b8743c;
-  --color-frame-dark: #8f5528;
-  --color-cream: #fbf5ea;
-  --color-ink: #2a2017;
-  --color-ink-muted: #8a7460;
+  /* MapleStory UI tokens */
+  --color-maple-gold: #ffd257;
+  --color-maple-orange: #f08a1c;
+  --color-maple-panel: #1f2433;
+  --color-maple-inset: #131722;
+  --color-maple-head: #333c55;
+  --color-maple-edge: #0a0d14;
+  --color-maple-muted: #96a2ba;
   --color-tile: #f08a1c;
 }
 
@@ -91,6 +94,12 @@
   body {
     @apply bg-background text-foreground antialiased;
     font-family: 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif;
+  }
+  .maple-title {
+    color: var(--color-maple-gold);
+    text-shadow:
+      0 1px 0 rgba(0, 0, 0, 0.85),
+      0 0 6px rgba(255, 190, 60, 0.25);
   }
   html.overlay,
   html.overlay body,

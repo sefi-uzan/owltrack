@@ -1,12 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
-import { Camera, Crosshair, Trash2, ZoomIn } from 'lucide-react'
+import { Camera, Crosshair, ListChecks, Trash2, ZoomIn } from 'lucide-react'
 import type { Rect, RegionDebug, RegionKey, Settings } from '@shared/types'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Slider } from '@/components/ui/slider'
 import { Switch } from '@/components/ui/switch'
 import { cn } from '@/lib/utils'
+import { Inset, Panel } from './Panel'
 
 const api = window.api
 
@@ -26,6 +25,10 @@ export const REGION_INFO: Record<RegionKey, { label: string; color: string; hint
 }
 
 const ORDER: RegionKey[] = ['exp', 'level', 'name', 'notices']
+
+
+/** Regions the tracker needs; meso notices are optional. */
+export const REQUIRED_REGIONS: RegionKey[] = ['exp', 'level', 'name']
 
 function useRegionDebug(): Partial<Record<RegionKey, RegionDebug>> {
   const [debug, setDebug] = useState<Partial<Record<RegionKey, RegionDebug>>>({})
@@ -91,132 +94,154 @@ export function Calibrator({ settings, streaming }: { settings: Settings; stream
     void api.updateSettings({ regions })
   }
 
+  const info = REGION_INFO[active]
+
   return (
-    <div className="flex flex-col gap-4">
-      <Card className="gap-3 py-4">
-        <CardHeader className="px-4">
-          <CardTitle>Game frame</CardTitle>
-          <CardDescription>
-            Pick a region on the right, then drag a box around it on the frame. Boxes are stored relative to the
-            window size.
-          </CardDescription>
-          <CardAction className="flex items-center gap-2">
-            <ZoomIn className="size-4 text-muted-foreground" />
-            <Slider className="w-28" min={1} max={4} step={0.5} value={[zoom]} onValueChange={([v]) => setZoom(v)} />
+    <div className="grid h-full grid-cols-[minmax(0,1fr)_300px] gap-3">
+      <Panel
+        title="Game frame"
+        icon={<Camera />}
+        bodyClassName="flex flex-col gap-2"
+        action={
+          <>
+            <ZoomIn className="size-4 text-maple-muted" />
+            <Slider className="w-24" min={1} max={4} step={0.5} value={[zoom]} onValueChange={([v]) => setZoom(v)} />
             <Button size="sm" variant="outline" onClick={() => void grab()} disabled={!streaming}>
               <Camera /> Grab frame
             </Button>
-          </CardAction>
-        </CardHeader>
-        <CardContent className="px-4">
-          {error && <p className="mb-2 text-sm text-destructive">{error}</p>}
-          <div className="max-h-[420px] overflow-auto rounded-lg border bg-black/40">
-            {frame ? (
-              <div
-                ref={surface}
-                className="relative cursor-crosshair touch-none select-none"
-                style={{ width: `${zoom * 100}%` }}
-                onPointerDown={onDown}
-                onPointerMove={onMove}
-                onPointerUp={onUp}
-              >
-                <img src={frame} className="pointer-events-none block w-full" draggable={false} />
-                {ORDER.map((key) => {
-                  const r = settings.regions[key]
-                  if (!r) return null
-                  return (
-                    <RectBox key={key} rect={r} color={REGION_INFO[key].color} label={REGION_INFO[key].label} dim={key !== active} />
-                  )
-                })}
-                {draft && <RectBox rect={draft} color={REGION_INFO[active].color} label={REGION_INFO[active].label} />}
-              </div>
-            ) : (
-              <div className="grid h-56 place-items-center text-sm text-muted-foreground">
-                {streaming ? 'Grabbing a frame…' : 'Waiting for the game window…'}
-              </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+          </>
+        }
+      >
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <Crosshair className="size-3.5 shrink-0" style={{ color: info.color }} />
+          <span>
+            Drag a box around <b style={{ color: info.color }}>{info.label}</b>. {info.hint}
+          </span>
+        </div>
+        {error && <p className="text-sm text-destructive">{error}</p>}
+        <Inset className="min-h-0 flex-1 overflow-auto bg-black/50">
+          {frame ? (
+            <div
+              ref={surface}
+              className="relative cursor-crosshair touch-none select-none"
+              style={{ width: `${zoom * 100}%` }}
+              onPointerDown={onDown}
+              onPointerMove={onMove}
+              onPointerUp={onUp}
+            >
+              <img src={frame} className="pointer-events-none block w-full" draggable={false} />
+              {ORDER.map((key) => {
+                const r = settings.regions[key]
+                if (!r) return null
+                return (
+                  <RectBox key={key} rect={r} color={REGION_INFO[key].color} label={REGION_INFO[key].label} dim={key !== active} />
+                )
+              })}
+              {draft && <RectBox rect={draft} color={info.color} label={info.label} />}
+            </div>
+          ) : (
+            <div className="grid h-full min-h-40 place-items-center text-sm text-muted-foreground">
+              {streaming ? 'Grabbing a frame…' : 'Waiting for the game window…'}
+            </div>
+          )}
+        </Inset>
+      </Panel>
 
-      <div className="grid grid-cols-2 gap-3">
+      <Panel title="Regions" icon={<ListChecks />} bodyClassName="flex flex-col gap-1.5 overflow-auto p-2">
         {ORDER.map((key) => {
-          const info = REGION_INFO[key]
+          const ri = REGION_INFO[key]
           const rect = settings.regions[key]
           const d = debug[key]
-          const disabled = key === 'notices' && !settings.noticesEnabled
+          const off = key === 'notices' && !settings.noticesEnabled
+          const selected = active === key
           return (
-            <Card
+            <div
               key={key}
-              className={cn('gap-3 py-3 transition-colors', active === key && 'border-primary/70 bg-primary/5')}
+              className={cn(
+                'rounded-md border transition-colors',
+                selected ? 'border-maple-gold/60 bg-white/[0.04]' : 'border-transparent hover:bg-white/[0.03]'
+              )}
             >
-              <CardHeader className="px-4">
-                <CardTitle className="flex items-center gap-2 text-sm">
-                  <span className="size-2.5 rounded-sm" style={{ background: info.color }} />
-                  {info.label}
-                  {rect ? <Badge variant="success">set</Badge> : <Badge variant="warning">not set</Badge>}
-                </CardTitle>
-                <CardDescription className="text-xs">{info.hint}</CardDescription>
-                <CardAction className="flex items-center gap-1">
-                  {key === 'notices' && (
-                    <Switch
-                      checked={settings.noticesEnabled}
-                      onCheckedChange={(v) => void api.updateSettings({ noticesEnabled: v })}
-                      title="Enable notice capture"
-                    />
-                  )}
-                  <Button
-                    size="sm"
-                    variant={active === key ? 'default' : 'outline'}
-                    onClick={() => setActive(key)}
-                    disabled={disabled}
+              <div className="flex items-center gap-2 px-2 py-1.5">
+                <button
+                  className="flex min-w-0 flex-1 items-center gap-2 text-left disabled:opacity-50"
+                  disabled={off}
+                  onClick={() => setActive(key)}
+                  title={off ? 'Turn on meso counting first' : `Draw ${ri.label}`}
+                >
+                  <span className="size-2.5 shrink-0 rounded-sm" style={{ background: ri.color }} />
+                  <span className={cn('truncate text-sm font-semibold', selected && 'text-maple-gold')}>{ri.label}</span>
+                  <span
+                    className={cn(
+                      'ml-auto shrink-0 rounded px-1.5 text-[10px] font-bold',
+                      off
+                        ? 'bg-white/5 text-maple-muted'
+                        : rect
+                          ? 'bg-emerald-500/15 text-emerald-400'
+                          : 'bg-amber-500/15 text-amber-400'
+                    )}
                   >
-                    <Crosshair /> Draw
-                  </Button>
-                  {rect && (
-                    <Button size="icon" variant="ghost" className="size-8" onClick={() => clear(key)} title="Clear">
-                      <Trash2 />
-                    </Button>
-                  )}
-                </CardAction>
-              </CardHeader>
-              <CardContent className="flex flex-col gap-2 px-4">
-                <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                  <span className="w-20 shrink-0">Threshold {settings.thresholds[key]}</span>
-                  <Slider
-                    min={60}
-                    max={240}
-                    step={5}
-                    value={[settings.thresholds[key]]}
-                    onValueChange={([v]) => void api.updateSettings({ thresholds: { ...settings.thresholds, [key]: v } })}
+                    {off ? 'off' : rect ? 'set' : 'not set'}
+                  </span>
+                </button>
+                {key === 'notices' && (
+                  <Switch
+                    checked={settings.noticesEnabled}
+                    onCheckedChange={(v) => {
+                      void api.updateSettings({ noticesEnabled: v })
+                      if (v) setActive('notices')
+                      else if (active === 'notices') setActive('exp')
+                    }}
+                    title="Count mesos (experimental)"
                   />
-                </div>
-                {d && rect && !disabled ? (
-                  <div className="flex flex-col gap-1.5">
-                    <img src={d.image} className="max-h-24 w-full rounded border bg-white object-contain object-left" />
-                    <div className="flex items-baseline justify-between gap-2 text-xs">
-                      <code className="truncate text-muted-foreground" title={d.text}>
-                        {d.text.replace(/\n/g, ' ⏎ ') || '(nothing read)'}
-                      </code>
-                      <span className="shrink-0 font-medium text-foreground">
-                        {d.parsed} <span className="text-muted-foreground">· {d.ms}ms</span>
-                      </span>
-                    </div>
-                  </div>
-                ) : (
-                  <p className="text-xs text-muted-foreground">
-                    {rect ? 'Waiting for the next read…' : 'Draw this region to start reading it.'}
-                  </p>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+
+              {selected && !off && (
+                <div className="flex flex-col gap-2 px-2 pb-2">
+                  {d && rect ? (
+                    <Inset className="flex flex-col gap-1 p-1.5">
+                      <img src={d.image} className="max-h-16 w-full rounded-sm bg-white object-contain object-left" />
+                      <div className="flex items-baseline justify-between gap-2 text-[11px]">
+                        <code className="truncate text-muted-foreground" title={d.text}>
+                          {d.text.replace(/\n/g, ' ⏎ ') || '(nothing read)'}
+                        </code>
+                        <span className="shrink-0 font-semibold text-maple-gold">
+                          {d.parsed} <span className="font-normal text-muted-foreground">· {d.ms}ms</span>
+                        </span>
+                      </div>
+                    </Inset>
+                  ) : (
+                    <p className="text-xs text-muted-foreground">
+                      {rect ? 'Waiting for the next read…' : 'Drag a box on the frame to start reading it.'}
+                    </p>
+                  )}
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <span className="w-24 shrink-0" title="Brightness cut-off for the black-on-white mask the OCR reads">
+                      Threshold <b className="text-white tabular-nums">{settings.thresholds[key]}</b>
+                    </span>
+                    <Slider
+                      min={60}
+                      max={240}
+                      step={5}
+                      value={[settings.thresholds[key]]}
+                      onValueChange={([v]) => void api.updateSettings({ thresholds: { ...settings.thresholds, [key]: v } })}
+                    />
+                    {rect && (
+                      <Button size="icon" variant="ghost" className="size-7 shrink-0" onClick={() => clear(key)} title="Clear">
+                        <Trash2 />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
           )
         })}
-      </div>
-      <p className="text-xs text-muted-foreground">
-        Tip: the preview shows exactly what the OCR sees — text should be crisp black on white. Nudge the threshold
-        until it is, and keep boxes tight around the text.
-      </p>
+        <p className="mt-auto px-1 pt-2 text-[11px] leading-snug text-muted-foreground">
+          The preview is exactly what the OCR sees: aim for crisp black text on white. Keep boxes tight around the text.
+        </p>
+      </Panel>
     </div>
   )
 }
@@ -236,7 +261,7 @@ function RectBox({ rect, color, label, dim }: { rect: Rect; color: string; label
       }}
     >
       <span
-        className="absolute -top-5 left-0 rounded px-1 text-[10px] font-semibold whitespace-nowrap text-black"
+        className={cn('absolute -top-5 rounded px-1', rect.x + rect.w > 0.85 ? 'right-0' : 'left-0', 'text-[10px] font-semibold whitespace-nowrap text-black')}
         style={{ background: color }}
       >
         {label}

@@ -54,13 +54,13 @@ export function createOverlayWindow(pos: { x?: number; y?: number }): BrowserWin
 export function createSettingsWindow(): BrowserWindow {
   const win = new BrowserWindow({
     title: 'EXP Tracker — Settings',
-    width: 980,
-    height: 760,
-    minWidth: 760,
+    width: 1000,
+    height: 680,
+    minWidth: 820,
     minHeight: 560,
     show: false,
     autoHideMenuBar: true,
-    backgroundColor: '#1c1917',
+    backgroundColor: '#141824',
     webPreferences: { preload, sandbox: true }
   })
   win.setMenu(null)
