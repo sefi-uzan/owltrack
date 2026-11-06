@@ -8,9 +8,10 @@ import {
   nativeImage,
   Tray
 } from 'electron'
-import { writeFileSync } from 'node:fs'
+import { readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import type { SettingsPatch } from '@shared/api'
+import { GlyphMatcher, type Bitmap } from '@shared/glyphs'
 import { parseExp, parseLevel, parseName } from '@shared/parse'
 import { ExpTracker } from '@shared/tracker'
 import type {
@@ -45,6 +46,33 @@ let editingOverlay = false
 
 const ocr = new OcrEngine()
 const tracker = new ExpTracker()
+
+/** Learned digit templates for the EXP numbers (see shared/glyphs.ts). */
+const CROSS_CHECK_EVERY = 100
+const glyphFile = (): string => join(app.getPath('userData'), 'glyphs.json')
+let glyphs = new GlyphMatcher()
+let expReads = 0
+let glyphRejects = 0
+let glyphSaveTimer: NodeJS.Timeout | undefined
+
+function loadGlyphs(): void {
+  try {
+    glyphs = new GlyphMatcher(JSON.parse(readFileSync(glyphFile(), 'utf8')))
+  } catch {
+    glyphs = new GlyphMatcher()
+  }
+}
+
+function saveGlyphs(): void {
+  clearTimeout(glyphSaveTimer)
+  glyphSaveTimer = setTimeout(() => {
+    try {
+      writeFileSync(glyphFile(), JSON.stringify(glyphs.templates))
+    } catch (err) {
+      console.error('Failed to save glyph templates', err)
+    }
+  }, 2000)
+}
 let captureStatus: CaptureStatus = { state: 'idle' }
 let source: WindowSourceInfo | null = null
 let identity: { name?: string; job?: string; candidate?: string } = {}
@@ -169,11 +197,30 @@ async function handleRegion(key: RegionKey, png: Uint8Array): Promise<{ retry: b
   const started = Date.now()
   const buf = Buffer.from(png)
   let text = ''
-  try {
-    text = await ocr.recognize(key, buf)
-  } catch (err) {
-    console.error('OCR failed', err)
-    return { retry: false }
+  let source: 'glyph' | 'tesseract' = 'tesseract'
+  let bitmap: Bitmap | undefined
+
+  // EXP changes on every kill: read it with the learned glyph templates when possible.
+  if (key === 'exp') {
+    const img = nativeImage.createFromBuffer(buf)
+    const size = img.getSize()
+    bitmap = { data: img.toBitmap(), width: size.width, height: size.height, channels: 4 }
+    // Every so often use Tesseract anyway, so templates keep being checked and refreshed.
+    if (++expReads % CROSS_CHECK_EVERY !== 0) {
+      const g = glyphs.readExp(bitmap)
+      if (g) {
+        text = g
+        source = 'glyph'
+      }
+    }
+  }
+  if (source === 'tesseract') {
+    try {
+      text = await ocr.recognize(key, buf)
+    } catch (err) {
+      console.error('OCR failed', err)
+      return { retry: false }
+    }
   }
   const t = Date.now()
   let retry = false
@@ -190,6 +237,22 @@ async function handleRegion(key: RegionKey, png: Uint8Array): Promise<{ retry: b
     if (r) {
       retry = tracker.ingestExp(r, t).retry
       parsed = `${r.exp.toLocaleString('en-US')} @ ${r.percent.toFixed(2)}%`
+      const cur = tracker.current
+      const accepted = cur?.exp === r.exp && cur.percent === r.percent
+      if (accepted) {
+        glyphRejects = 0
+        // Only readings the tracker validated are used to teach the glyph matcher.
+        if (source === 'tesseract' && bitmap && glyphs.learnExp(bitmap, r.exp, r.percent)) {
+          saveGlyphs()
+          if (DEBUG) console.log(`[glyphs] learned; digits known per size: ${JSON.stringify(Object.fromEntries(Object.keys(glyphs.templates).map((h) => [h, glyphs.digitsKnown(Number(h))])))}`)
+        }
+      } else if (source === 'glyph' && !retry && ++glyphRejects >= 3) {
+        // Templates keep producing readings the tracker throws out: start learning again.
+        console.warn('Glyph templates look wrong; relearning')
+        glyphs.templates = {}
+        glyphRejects = 0
+        saveGlyphs()
+      }
     }
   } else if (key === 'name') {
     const n = parseName(text)
@@ -210,7 +273,7 @@ async function handleRegion(key: RegionKey, png: Uint8Array): Promise<{ retry: b
   }
 
   if (DEBUG) writeFileSync(join(app.getPath('temp'), `exp-tracker-${key}.png`), buf)
-  if (DEBUG) console.log(`[ocr] ${key} ${Date.now() - started}ms ${JSON.stringify(text.trim())} -> ${parsed}${retry ? ' (retry)' : ''}`)
+  if (DEBUG) console.log(`[ocr] ${key} ${source} ${Date.now() - started}ms ${JSON.stringify(text.trim())} -> ${parsed}${retry ? ' (retry)' : ''}`)
   broadcast()
   if (settingsWin && !settingsWin.isDestroyed() && settingsWin.isVisible()) {
     const debug: RegionDebug = {
@@ -372,6 +435,7 @@ app.on('second-instance', openSettings)
 app.whenReady().then(() => {
   app.setAppUserModelId('com.sefiuzan.exptracker')
   store = new SettingsStore()
+  loadGlyphs()
   registerIpc()
 
   overlay = createOverlayWindow(store.value.overlay)
@@ -408,6 +472,13 @@ app.whenReady().then(() => {
   globalShortcut.register(SHORTCUT_TOGGLE, toggleVisible)
 
   ocr.preload()
+  if (DEBUG) {
+    setInterval(() => {
+      const m = process.memoryUsage()
+      const mb = (n: number): number => Math.round(n / 1048576)
+      console.log(`[mem] rss=${mb(m.rss)} heapUsed=${mb(m.heapUsed)} external=${mb(m.external)} arrayBuffers=${mb(m.arrayBuffers)}`)
+    }, 20_000)
+  }
   void searchForGame()
   // Keeps time-based numbers (rates, ETA, session length) moving between readings.
   setInterval(() => {

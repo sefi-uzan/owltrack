@@ -42,6 +42,21 @@ export class OcrEngine {
   private worker?: Promise<Worker>
   private kind?: Kind
   private queue: Promise<unknown> = Promise.resolve()
+  private pending = 0
+  private lastUsed = Date.now()
+  private idleTimer = setInterval(() => this.reapIfIdle(), 15_000)
+
+  /** Shut the worker down after this long unused (frees ~300 MB); it restarts on the next read. */
+  static IDLE_MS = 60_000
+
+  private reapIfIdle(): void {
+    if (!this.worker || this.pending > 0 || Date.now() - this.lastUsed < OcrEngine.IDLE_MS) return
+    const w = this.worker
+    this.worker = undefined
+    this.kind = undefined
+    void w.then((x) => x.terminate()).catch(() => undefined)
+    if (process.env.EXP_TRACKER_DEBUG) console.log('[ocr] engine idle: shut down')
+  }
 
   private get(): Promise<Worker> {
     if (!this.worker) {
@@ -63,6 +78,8 @@ export class OcrEngine {
   }
 
   recognize(key: RegionKey, png: Buffer): Promise<string> {
+    this.pending++
+    this.lastUsed = Date.now()
     const job = this.queue.then(async () => {
       const worker = await this.get()
       const kind = KIND[key]
@@ -74,10 +91,14 @@ export class OcrEngine {
       return data.text ?? ''
     })
     this.queue = job.catch(() => undefined)
-    return job
+    return job.finally(() => {
+      this.pending--
+      this.lastUsed = Date.now()
+    })
   }
 
   async dispose(): Promise<void> {
+    clearInterval(this.idleTimer)
     const w = this.worker
     this.worker = undefined
     if (w) await (await w).terminate().catch(() => undefined)

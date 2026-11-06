@@ -16,7 +16,12 @@ const api = window.api
 /** Minimum gap between two OCR passes of the same region. */
 const MIN_INTERVAL: Record<RegionKey, number> = { level: 800, name: 1500, exp: 200, notices: 600 }
 /** Re-read regions now and then even if nothing changed, to self-heal from a bad read. */
-const FORCE_INTERVAL_MS = 20_000
+// EXP is read from learned glyphs (no Tesseract), so it can self-check often; the others are
+// rare Tesseract reads and shouldn't keep the OCR engine awake (it shuts down when idle).
+const FORCE_INTERVAL_MS: Record<RegionKey, number> = { exp: 20_000, level: 300_000, name: 300_000, notices: 60_000 }
+/** After this long without any region changing, sample fewer frames. */
+const IDLE_AFTER_MS = 20_000
+const IDLE_FPS = 2
 
 interface RegionState {
   raw: OffscreenCanvas
@@ -41,6 +46,8 @@ let generation = 0
 let currentSource: WindowSourceInfo | null = null
 let wantSnapshot = false
 let lastFrameAt = 0
+/** Last time any region changed (a kill, a level-up, a new notice). */
+let lastChangeAt = performance.now()
 let frameSize = { w: 0, h: 0 }
 
 function status(s: CaptureStatus): void {
@@ -132,7 +139,9 @@ let stats = { frames: 0, processed: 0, ms: 0, since: performance.now(), format: 
 function onFrame(frame: VideoFrame): boolean {
   const now = performance.now()
   // Chromium may deliver faster than asked; enforce the budget ourselves.
-  if (!wantSnapshot && now - lastFrameAt < 1000 / settings.captureFps - 5) return false
+  // While nothing changes (AFK, in town) drop to IDLE_FPS; the first change restores full speed.
+  const fps = now - lastChangeAt > IDLE_AFTER_MS ? Math.min(IDLE_FPS, settings.captureFps) : settings.captureFps
+  if (!wantSnapshot && now - lastFrameAt < 1000 / fps - 5) return false
   lastFrameAt = now
 
   const W = frame.displayWidth
@@ -201,12 +210,13 @@ function onFrame(frame: VideoFrame): boolean {
     } else {
       changed = !st.mask || maskDiff(mask, st.mask) > minPixels
     }
-    const due = st.retry || now - st.lastOcr > FORCE_INTERVAL_MS
+    const due = st.retry || now - st.lastOcr > FORCE_INTERVAL_MS[key]
     if (!(changed || due) || now - st.lastOcr < MIN_INTERVAL[key]) continue
 
     st.mask = mask
     st.retry = false
     st.lastOcr = now
+    if (changed) lastChangeAt = now
     st.busy = true
     if (st.raw.width !== sw || st.raw.height !== sh) {
       st.raw.width = sw

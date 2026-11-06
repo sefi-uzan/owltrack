@@ -35,10 +35,18 @@ The tray icon has the same toggles, plus **Settings & calibration** and **Reset 
   few fps and capped at 1440p. Your overlay is never part of the picture.
 - Every frame, only the calibrated regions are copied (GPU-side, into one small atlas) and read back
   once. Each region becomes a 1-bit "text mask".
-- OCR runs **only when a region's mask changes**, i.e. when the numbers change. A read takes
-  roughly 5–30 ms on a single background Tesseract worker.
-- Measured against a 4K MapleStory window: ~4–6 ms of work per frame, and about 3% of one CPU core
-  overall with EXP/level/name enabled (around 9% with notices enabled).
+- OCR runs **only when a region's mask changes**, i.e. when the numbers change.
+- **EXP is read by a self-learned glyph matcher** (`src/shared/glyphs.ts`, ~1 ms per read). Whenever
+  Tesseract produces a reading that the tracker validated, the image is cut into glyphs and labelled
+  with the known digits. After about a minute of grinding all ten digits are known, and from then on
+  Tesseract only reads the level, the name, the occasional cross-check (every 100th EXP read) and any
+  glyph it isn't sure about. Templates are saved in `glyphs.json` next to the settings.
+- The Tesseract worker shuts down after 60 s unused and restarts on demand.
+- Capture drops to 2 fps after 20 s without any change (AFK, in town) and goes back to full speed on
+  the next change.
+- Measured against a 4K MapleStory window: ~3 ms of work per frame. Our own main-process heap is
+  ~5 MB; most of the memory (~250 MB main + ~500 MB GPU process) is Electron/Chromium and Windows'
+  desktop-capture pipeline.
 
 ## Accuracy safeguards
 
