@@ -1,5 +1,5 @@
-appId: com.sefiuzan.exptracker
-productName: EXP Tracker
+appId: com.sefiuzan.owltrack
+productName: OwlTrack
 directories:
   buildResources: build
   output: dist

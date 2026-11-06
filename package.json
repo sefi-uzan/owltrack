@@ -1,6 +1,11 @@
 {
-  "name": "exp-tracker-monorepo",
+  "name": "owltrack-monorepo",
   "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sefi-uzan/owltrack.git"
+  },
+  "license": "MIT",
   "workspaces": [
     "apps/*",
     "packages/*"

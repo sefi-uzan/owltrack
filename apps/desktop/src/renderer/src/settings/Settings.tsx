@@ -300,7 +300,7 @@ export function Settings() {
         <div className="grid size-7 place-items-center rounded-md border border-[#a8580c] bg-gradient-to-b from-[#ffd463] to-[#e57f12] text-[11px] font-black text-white [text-shadow:0_1px_1px_rgba(90,40,0,0.8)]">
           EXP
         </div>
-        <h1 className="maple-title text-[15px] font-black tracking-wide">EXP Tracker</h1>
+        <h1 className="maple-title text-[15px] font-black tracking-wide">OwlTrack</h1>
         <GameWindow settings={settings} snap={snap} />
       </header>
 

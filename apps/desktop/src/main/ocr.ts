@@ -55,7 +55,7 @@ export class OcrEngine {
     this.worker = undefined
     this.kind = undefined
     void w.then((x) => x.terminate()).catch(() => undefined)
-    if (process.env.EXP_TRACKER_DEBUG) console.log('[ocr] engine idle: shut down')
+    if (process.env.OWLTRACK_DEBUG) console.log('[ocr] engine idle: shut down')
   }
 
   private get(): Promise<Worker> {

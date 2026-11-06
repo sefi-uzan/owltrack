@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  SignPath artifact configuration "app" (stage 1 of 2).
+  Signs the app executable before the installers are built around it.
+  The artifact is the GitHub Actions artifact "unsigned-app": a zip holding only OwlTrack.exe.
+-->
+<artifact-configuration xmlns="http://signpath.io/artifact-configuration/v1">
+  <parameters>
+    <parameter name="version" required="true" />
+  </parameters>
+  <zip-file>
+    <pe-file path="OwlTrack.exe" product-name="OwlTrack" product-version="${version}.0">
+      <authenticode-sign />
+    </pe-file>
+  </zip-file>
+</artifact-configuration>

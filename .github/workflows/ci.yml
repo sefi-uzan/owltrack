@@ -36,9 +36,20 @@ jobs:
         run: npm test
 
   package-windows:
-    name: Build & package (Windows x64)
+    name: Build, sign & package (Windows x64)
     needs: checks
     runs-on: windows-latest
+    permissions:
+      contents: read
+      # SignPath's action reads job details and downloads the unsigned artifacts with the job token
+      actions: read
+    outputs:
+      tag: ${{ steps.meta.outputs.tag }}
+      release: ${{ steps.meta.outputs.release }}
+    defaults:
+      run:
+        shell: bash
+        working-directory: apps/desktop
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -46,46 +57,122 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
-      - name: Build and package
-        run: npm run dist
+        working-directory: .
+
+      - name: Decide whether this build is a release
+        id: meta
+        env:
+          SIGNPATH_CONFIGURED: ${{ vars.SIGNPATH_ORGANIZATION_ID != '' }}
+          IS_MASTER_PUSH: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+        run: |
+          version=$(node -p "require('./package.json').version")
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "tag=v$version" >> "$GITHUB_OUTPUT"
+          release=false
+          if [ "$IS_MASTER_PUSH" = true ]; then
+            if git ls-remote --exit-code --tags origin "refs/tags/v$version" > /dev/null; then
+              echo "::warning::v$version is already released. Bump the version in apps/desktop/package.json to publish a new release."
+            else
+              release=true
+            fi
+          fi
+          echo "release=$release" >> "$GITHUB_OUTPUT"
+          # Only release builds are signed: every signing request needs a manual approval in SignPath
+          sign=false
+          if [ "$release" = true ] && [ "$SIGNPATH_CONFIGURED" = true ]; then sign=true; fi
+          echo "sign=$sign" >> "$GITHUB_OUTPUT"
+          echo "version=$version release=$release sign=$sign"
+
+      - name: Build the app (win-unpacked)
+        run: npm run dist:dir
+
+      # --- Stage 1: sign OwlTrack.exe -------------------------------------------------------
+      - name: Upload unsigned app exe
+        id: unsigned-app
+        if: steps.meta.outputs.sign == 'true'
+        uses: actions/upload-artifact@v7
+        with:
+          name: unsigned-app
+          path: apps/desktop/dist/win-unpacked/OwlTrack.exe
+          if-no-files-found: error
+      - name: Sign app exe (SignPath)
+        if: steps.meta.outputs.sign == 'true'
+        uses: signpath/github-action-submit-signing-request@v2
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+          project-slug: owltrack
+          signing-policy-slug: release-signing
+          artifact-configuration-slug: app
+          github-artifact-id: ${{ steps.unsigned-app.outputs.artifact-id }}
+          parameters: |
+            version: "${{ steps.meta.outputs.version }}"
+          wait-for-completion-timeout-in-seconds: 3600
+          output-artifact-directory: apps/desktop/dist/signed-app
+      - name: Put the signed exe back into win-unpacked
+        if: steps.meta.outputs.sign == 'true'
+        run: cp -f dist/signed-app/OwlTrack.exe dist/win-unpacked/OwlTrack.exe
+
+      # --- Installers around the (signed) app ----------------------------------------------
+      - name: Build installer and portable exe
+        run: npx electron-builder --win --prepackaged dist/win-unpacked --publish never
+
+      # --- Stage 2: sign the installers ------------------------------------------------------
+      - name: Upload unsigned installers
+        id: unsigned-installers
+        if: steps.meta.outputs.sign == 'true'
+        uses: actions/upload-artifact@v7
+        with:
+          name: unsigned-installers
+          path: apps/desktop/dist/*.exe
+          if-no-files-found: error
+      - name: Sign installers (SignPath)
+        if: steps.meta.outputs.sign == 'true'
+        uses: signpath/github-action-submit-signing-request@v2
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+          project-slug: owltrack
+          signing-policy-slug: release-signing
+          artifact-configuration-slug: installers
+          github-artifact-id: ${{ steps.unsigned-installers.outputs.artifact-id }}
+          parameters: |
+            version: "${{ steps.meta.outputs.version }}"
+          wait-for-completion-timeout-in-seconds: 3600
+          output-artifact-directory: apps/desktop/dist/signed
+      - name: Collect release files
+        env:
+          SIGNED: ${{ steps.meta.outputs.sign }}
+        run: |
+          mkdir -p dist/release
+          if [ "$SIGNED" = true ]; then cp dist/signed/*.exe dist/release/; else cp dist/*.exe dist/release/; fi
+          ls -l dist/release
+
       - uses: actions/upload-artifact@v7
         with:
-          name: exp-tracker-windows-x64
-          path: apps/desktop/dist/*.exe
+          name: owltrack-windows-x64
+          path: apps/desktop/dist/release/*.exe
           if-no-files-found: error
 
   release:
     name: Tag & GitHub release
     needs: package-windows
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    if: needs.package-windows.outputs.release == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v5
-      - name: Read version
-        id: version
-        run: |
-          version=$(node -p "require('./apps/desktop/package.json').version")
-          echo "tag=v$version" >> "$GITHUB_OUTPUT"
-          if git ls-remote --exit-code --tags origin "refs/tags/v$version" > /dev/null; then
-            echo "::warning::v$version is already released. Bump the version in apps/desktop/package.json to publish a new release."
-            echo "exists=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "exists=false" >> "$GITHUB_OUTPUT"
-          fi
       - uses: actions/download-artifact@v8
-        if: steps.version.outputs.exists == 'false'
         with:
-          name: exp-tracker-windows-x64
+          name: owltrack-windows-x64
           path: artifacts
       - name: Create tag and release
-        if: steps.version.outputs.exists == 'false'
         env:
           GH_TOKEN: ${{ github.token }}
-          TAG: ${{ steps.version.outputs.tag }}
+          TAG: ${{ needs.package-windows.outputs.tag }}
         run: |
           gh release create "$TAG" artifacts/*.exe \
+            --repo "$GITHUB_REPOSITORY" \
             --target "$GITHUB_SHA" \
-            --title "EXP Tracker $TAG" \
+            --title "OwlTrack $TAG" \
             --generate-notes

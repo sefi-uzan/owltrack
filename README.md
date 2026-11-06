@@ -1,6 +1,9 @@
-<img src="assets/icon.svg" width="64" height="64" alt="">
+<img src="apps/desktop/assets/icon.svg" width="64" height="64" alt="">
 
-# exp-tracker
+# OwlTrack
+
+[Download](https://github.com/sefi-uzan/owltrack/releases/latest) ·
+[Code signing policy](#code-signing-policy) · [Privacy](#privacy) · [License](LICENSE)
 
 An always-on-top overlay for MapleStory that **reads your level, character name and EXP straight
 from the game window** and shows EXP gained in the last 5 minutes, EXP/hour, session total and time
@@ -9,10 +12,21 @@ to next level.
 Electron + TypeScript, React + shadcn/ui (Tailwind v4), bundled with **electron-vite** (Vite 8) and
 packaged with **electron-builder** (NSIS installer + portable exe). OCR is Tesseract (WASM, offline).
 
+## Install
+
+Download the latest release from [GitHub Releases](https://github.com/sefi-uzan/owltrack/releases/latest)
+(Windows 10/11, x64):
+
+- `OwlTrack-Setup-x.y.z.exe`: installer. Uninstall it from **Settings → Apps → Installed apps**
+  (or "Add or remove programs"), like any other app.
+- `OwlTrack-Portable-x.y.z.exe`: runs without installing. To remove it, delete the exe.
+
+Settings and learned glyphs live in `%APPDATA%\OwlTrack`; delete that folder to remove them too.
+
 ## Using it
 
 1. Run the game **windowed or borderless** (an overlay can't sit on top of exclusive fullscreen).
-2. Start EXP Tracker. The first time, the settings window opens on the **Calibrate** tab.
+2. Start OwlTrack. The first time, the settings window opens on the **Calibrate** tab.
 3. If it doesn't find the game, type part of its window title or use **Pick window**.
 4. Click **Draw** next to each region, then drag a tight box around it on the frame:
    - **EXP numbers**: just `66.380[15.50%]`, without the `EXP` label
@@ -71,11 +85,11 @@ npm test             # parser + tracker unit tests (vitest)
 npm run typecheck    # every workspace
 npm run check        # Biome lint + format check (Ultracite preset, see biome.jsonc)
 npm run fix          # apply Biome's safe fixes and formatting
-npm run dist         # apps/desktop/dist/EXP Tracker-Setup-x.y.z.exe and a portable exe
+npm run dist         # apps/desktop/dist/OwlTrack-Setup-x.y.z.exe and a portable exe
 npm run icons -w @repo/desktop   # regenerate build/icon.ico, resources/tray.png from assets/icon.svg
 ```
 
-Set `EXP_TRACKER_DEBUG=1` to log every OCR pass and per-frame capture timings to the console.
+Set `OWLTRACK_DEBUG=1` to log every OCR pass and per-frame capture timings to the console.
 
 ```
 apps/desktop        the Electron app (@repo/desktop)
@@ -98,3 +112,37 @@ wildcard folder aliases wrong whenever a parent folder name contains a dot (like
 
 Keep `electron` pinned to an exact version in `apps/desktop/package.json`: electron-builder can't
 see the hoisted copy in the root `node_modules`, so it needs the version spelled out.
+
+## Contributing
+
+Issues and pull requests are welcome. Run `npm run check`, `npm run typecheck` and `npm test`
+before opening a PR.
+
+## Code signing policy
+
+Free code signing provided by [SignPath.io](https://about.signpath.io), certificate by
+[SignPath Foundation](https://signpath.org).
+
+Only binaries built by this repository's [CI workflow](.github/workflows/ci.yml) from the source in
+this repository are signed. Every signing request is approved manually.
+
+Team roles:
+
+- Committers and reviewers: [Sefi Uzan](https://github.com/sefi-uzan)
+- Approvers: [Sefi Uzan](https://github.com/sefi-uzan)
+
+Pull requests from outside contributors are reviewed by a committer before they are merged.
+
+## Privacy
+
+This program will not transfer any information to other networked systems unless specifically
+requested by the user or the person installing or operating it.
+
+OwlTrack works entirely offline: OCR runs locally (Tesseract, bundled), and settings stay on your PC.
+
+## License
+
+[MIT](LICENSE) © Sefi Uzan.
+
+OwlTrack is a fan-made tool and isn't affiliated with or endorsed by NEXON. MapleStory is a trademark
+of NEXON Korea Corporation.

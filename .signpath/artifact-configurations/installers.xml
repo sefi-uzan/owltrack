@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  SignPath artifact configuration "installers" (stage 2 of 2).
+  Signs the NSIS installer and the portable exe, which already contain the signed OwlTrack.exe.
+  The artifact is the GitHub Actions artifact "unsigned-installers": a zip holding both exes.
+-->
+<artifact-configuration xmlns="http://signpath.io/artifact-configuration/v1">
+  <parameters>
+    <parameter name="version" required="true" />
+  </parameters>
+  <zip-file>
+    <pe-file path="OwlTrack-Setup-${version}.exe" product-name="OwlTrack" product-version="${version}">
+      <authenticode-sign />
+    </pe-file>
+    <pe-file path="OwlTrack-Portable-${version}.exe" product-name="OwlTrack" product-version="${version}">
+      <authenticode-sign />
+    </pe-file>
+  </zip-file>
+</artifact-configuration>

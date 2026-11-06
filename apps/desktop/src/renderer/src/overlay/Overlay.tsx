@@ -208,7 +208,7 @@ export function Overlay() {
             )}
             title={snap?.capture.windowName ?? 'Not capturing'}
           />
-          <span className="maple-title text-[11px] font-black tracking-[0.14em]">EXP TRACKER</span>
+          <span className="maple-title text-[11px] font-black tracking-[0.14em]">OWLTRACK</span>
           <CharacterName snap={snap} settings={settings} />
           {unlocked && (
             <>

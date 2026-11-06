@@ -24,7 +24,7 @@ export function createOverlayWindow(pos: { x?: number; y?: number }): BrowserWin
     })
 
   const win = new BrowserWindow({
-    title: 'EXP Tracker',
+    title: 'OwlTrack',
     width: OVERLAY_WIDTH,
     height: 190,
     x: onScreen ? pos.x : work.x + work.width - OVERLAY_WIDTH - 24,
@@ -53,7 +53,7 @@ export function createOverlayWindow(pos: { x?: number; y?: number }): BrowserWin
 
 export function createSettingsWindow(): BrowserWindow {
   const win = new BrowserWindow({
-    title: 'EXP Tracker — Settings',
+    title: 'OwlTrack — Settings',
     width: 1000,
     height: 680,
     minWidth: 820,
@@ -72,7 +72,7 @@ export function createSettingsWindow(): BrowserWindow {
 /** Hidden window that owns the game-window video stream and does the pixel work. */
 export function createCaptureWindow(): BrowserWindow {
   const win = new BrowserWindow({
-    title: 'EXP Tracker — Capture',
+    title: 'OwlTrack — Capture',
     width: 320,
     height: 240,
     show: false,

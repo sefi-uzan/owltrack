@@ -6,6 +6,7 @@ import { parseExp, parseLevel, parseMesoLine, parseName } from '@shared/parse'
 import { ExpTracker } from '@shared/tracker'
 import type { CaptureStatus, RegionDebug, RegionKey, TrackerSnapshot, WindowSourceInfo } from '@shared/types'
 import { app, BrowserWindow, desktopCapturer, globalShortcut, ipcMain, Menu, nativeImage, Tray } from 'electron'
+import { migrateLegacyUserData } from './migrate'
 import { OcrEngine } from './ocr'
 import { SettingsStore } from './store'
 import { createCaptureWindow, createOverlayWindow, createSettingsWindow, OVERLAY_WIDTH } from './windows'
@@ -18,8 +19,8 @@ if (!app.requestSingleInstanceLock()) {
 const SHORTCUT_LOCK = 'CommandOrControl+Shift+L'
 const SHORTCUT_TOGGLE = 'CommandOrControl+Shift+H'
 const SEARCH_INTERVAL_MS = 3000
-/** Set EXP_TRACKER_DEBUG=1 to log every OCR pass to the console. */
-const DEBUG = Boolean(process.env.EXP_TRACKER_DEBUG)
+/** Set OWLTRACK_DEBUG=1 to log every OCR pass to the console. */
+const DEBUG = Boolean(process.env.OWLTRACK_DEBUG)
 
 let store: SettingsStore
 let overlay: BrowserWindow | null = null
@@ -115,7 +116,7 @@ function setCaptureStatus(next: CaptureStatus): void {
 // ---------------------------------------------------------------------------------------------
 // Game window discovery
 
-const isOwnWindow = (name: string): boolean => name.startsWith('EXP Tracker')
+const isOwnWindow = (name: string): boolean => name.startsWith('OwlTrack')
 
 async function listWindows(): Promise<WindowSourceInfo[]> {
   const sources = await desktopCapturer.getSources({
@@ -262,7 +263,7 @@ async function handleRegion(key: RegionKey, png: Uint8Array): Promise<{ retry: b
     parsed = `${lines.filter((l) => parseMesoLine(l) !== undefined).length} meso line(s), session ${tracker.mesos.total}`
   }
 
-  if (DEBUG) writeFileSync(join(app.getPath('temp'), `exp-tracker-${key}.png`), buf)
+  if (DEBUG) writeFileSync(join(app.getPath('temp'), `owltrack-${key}.png`), buf)
   if (DEBUG)
     console.log(
       `[ocr] ${key} ${reader} ${Date.now() - started}ms ${JSON.stringify(text.trim())} -> ${parsed}${retry ? ' (retry)' : ''}`
@@ -358,14 +359,14 @@ function updateTrayMenu(): void {
         }
       },
       { type: 'separator' },
-      { label: 'Quit EXP Tracker', role: 'quit' }
+      { label: 'Quit OwlTrack', role: 'quit' }
     ])
   )
 }
 
 function createTray(): void {
   tray = new Tray(trayIcon())
-  tray.setToolTip('EXP Tracker')
+  tray.setToolTip('OwlTrack')
   tray.on('click', openSettings)
   updateTrayMenu()
 }
@@ -434,7 +435,8 @@ function registerIpc(): void {
 app.on('second-instance', openSettings)
 
 app.whenReady().then(() => {
-  app.setAppUserModelId('com.sefiuzan.exptracker')
+  app.setAppUserModelId('com.sefiuzan.owltrack')
+  migrateLegacyUserData()
   store = new SettingsStore()
   loadGlyphs()
   registerIpc()
