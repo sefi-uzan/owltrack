@@ -1,0 +1,36 @@
+# Installation
+
+Download the latest release from [GitHub Releases](https://github.com/sefi-uzan/owltrack/releases/latest).
+Each release has two files:
+
+| File | What it is |
+| --- | --- |
+| `OwlTrack-Setup-x.y.z.exe` | The installer. Adds a Start menu entry and an uninstaller. |
+| `OwlTrack-Portable-x.y.z.exe` | Runs without installing. Keep it anywhere, e.g. next to your game. |
+
+Both are the same app, and release builds are code-signed (see [Privacy & security](#/privacy)).
+
+## Installer
+
+1. Run `OwlTrack-Setup-x.y.z.exe`.
+2. Pick a folder (or keep the default) and finish the setup.
+3. Start **OwlTrack** from the Start menu. It lives in the system tray; the settings window opens the
+   first time so you can [calibrate](#/quick-start).
+
+## Portable
+
+Double-click `OwlTrack-Portable-x.y.z.exe`. That's it. Updating means downloading the new portable exe
+and deleting the old one.
+
+## Updating
+
+OwlTrack doesn't check for updates by itself (it never goes online). To update, download the new
+release and run it. Your settings and calibration are kept.
+
+## Uninstalling
+
+- **Installer:** remove OwlTrack from **Settings → Apps → Installed apps** (or "Add or remove
+  programs"), like any other app.
+- **Portable:** delete the exe.
+
+Settings and learned glyphs live in `%APPDATA%\OwlTrack`. Delete that folder to remove them too.

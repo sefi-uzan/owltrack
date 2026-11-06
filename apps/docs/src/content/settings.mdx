@@ -1,0 +1,38 @@
+# Settings
+
+Open the settings window from the tray menu (**Settings & calibration…**) or from the button on an
+unlocked overlay. The title bar always shows whether the game is being captured, and lets you change
+which window is captured.
+
+## Overlay tab
+
+**Display**
+
+| Setting | What it does |
+| --- | --- |
+| Show overlay | Same as <Kbd>Ctrl+Shift+H</Kbd>. |
+| Lock in place | Same as <Kbd>Ctrl+Shift+L</Kbd>. Clicks pass through to the game while locked. |
+| Size | 70% to 180%. |
+| Opacity | 30% to 100%. |
+
+**Reading**
+
+| Setting | What it does |
+| --- | --- |
+| Character name | Fixes OCR misreads of your name. Remembered per character. |
+| Capture rate | Frames per second taken from the game (1 to 10, default 4). Regions are only read when they change, so this mostly sets how quickly the overlay reacts. |
+| Count mesos | Experimental meso counting from the on-screen notices. |
+
+## Session tab
+
+A bigger view of the current session: character, level, EXP, session length, EXP gained, levels
+gained, EXP/hour, time to level and mesos. **Reset session** starts counting from zero.
+
+## Where settings are stored
+
+Everything lives in `%APPDATA%\OwlTrack`:
+
+- `settings.json`: window title, regions, thresholds and overlay preferences
+- `glyphs.json`: digit shapes OwlTrack learned from your game, see [How it works](#/how-it-works)
+
+Delete the folder to start fresh.

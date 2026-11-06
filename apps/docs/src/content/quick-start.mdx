@@ -1,0 +1,30 @@
+# Quick start
+
+You calibrate OwlTrack once: you show it where the level, name and EXP are on your screen. After that
+it just runs.
+
+1. **Run the game windowed or borderless.**
+2. **Start OwlTrack.** The first time, the settings window opens on the **Calibrate** tab.
+3. **Find the game window.** OwlTrack looks for a window whose title contains `MapleStory`. If yours is
+   different, type part of its title in the box at the top right, or click **Pick** and choose it from
+   the list. The dot turns green and says **Capturing** once it's connected.
+4. **Draw the regions.** Pick a region on the right and drag a tight box around it on the game frame.
+   OwlTrack moves on to the next one by itself.
+5. **Check the previews.** Each region shows exactly what the OCR sees and what it parsed. If the
+   text isn't crisp black on white, nudge its **Threshold** slider.
+
+| Region | Draw a box around |
+| --- | --- |
+| **EXP numbers** | Just the numbers, e.g. `66.380[15.50%]`. Leave out the `EXP` label. |
+| **Level** | Only the orange digit tiles, not the `LV.` text. |
+| **Job + name** | Both lines next to the level: job on top, name below. |
+| **Meso notices** | Optional and experimental, see [Calibration](#/calibration). |
+
+That's it. Close the settings window; the overlay keeps running from the tray.
+
+<Callout>
+On a high-resolution screen, use the zoom slider above the frame to draw tight boxes. Tight boxes read
+better and faster.
+</Callout>
+
+Next time, OwlTrack starts straight away: it finds the game, reads the bar and starts counting.

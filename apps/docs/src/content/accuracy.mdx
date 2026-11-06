@@ -1,0 +1,19 @@
+# Accuracy
+
+OCR is noisy, so every reading is sanity-checked before it counts.
+
+- **EXP and % must agree.** The EXP number and the percentage together imply how much EXP the level
+  needs. A misread digit breaks that, and the reading is thrown away.
+- **Surprises are confirmed.** The first reading of a session and any drop in EXP have to be seen
+  twice before they're accepted.
+- **Drops are classified.** A drop is either a **level-up** (the level went up, or the bar emptied)
+  or a **death**, which is counted as a loss.
+- **Stuck baselines fix themselves.** Three consistent readings that disagree with what OwlTrack
+  believes reset its baseline without counting the difference as EXP.
+
+## When numbers look wrong
+
+- Check the region previews in **Calibrate**. The mask should be crisp black text on white.
+- Redraw boxes tighter, especially after changing resolution or UI scale.
+- If the name is slightly off, fix it once in **Overlay → Character name**.
+- **Reset session** from the tray if a session got off to a bad start.

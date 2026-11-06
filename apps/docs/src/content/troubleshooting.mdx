@@ -1,0 +1,42 @@
+# Troubleshooting
+
+## "Looking for the game window…"
+
+OwlTrack can't find a window whose title contains the text in the title bar box (default
+`MapleStory`).
+
+- Make sure the game is running and not minimized.
+- Click **Pick** in the settings window and choose the game from the list.
+
+## The overlay isn't on top of the game
+
+The game is probably in exclusive fullscreen. Switch it to **windowed** or **borderless**.
+
+## "No frame received"
+
+The game window is minimized or hidden. Restore it and click **Grab frame**.
+
+## "Not calibrated"
+
+At least one of **EXP numbers**, **Level** and **Job + name** isn't set yet. Open **Settings &
+calibration…** from the tray and draw the missing boxes. See [Quick start](#/quick-start).
+
+## The EXP doesn't update, or jumps around
+
+- Open **Calibrate** and check the EXP preview: it should show only the numbers, in crisp black on
+  white. Adjust the threshold or redraw the box.
+- Make sure the box doesn't include the `EXP` label.
+- After changing the game's resolution or UI scale, redraw all boxes.
+
+## The overlay doesn't react to clicks
+
+It's locked (click-through) on purpose. Press <Kbd>Ctrl+Shift+L</Kbd> to unlock it.
+
+## Starting over
+
+Quit OwlTrack and delete `%APPDATA%\OwlTrack`. The next start opens calibration again.
+
+## Still stuck?
+
+[Open an issue](https://github.com/sefi-uzan/owltrack/issues) with what you see. A screenshot of the
+Calibrate tab helps a lot.

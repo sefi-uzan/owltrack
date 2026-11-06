@@ -1,0 +1,4 @@
+@import "@repo/ui/globals.css";
+
+/* The demo renders the desktop app's renderer components, so Tailwind has to see their classes. */
+@source "../../desktop/src/renderer/src";

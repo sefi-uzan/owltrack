@@ -81,7 +81,9 @@ A Turborepo with npm workspaces. Run these from the repo root:
 
 ```bash
 npm install
-npm run dev          # electron-vite dev with HMR
+npm run dev          # every app in dev mode (desktop, web, docs)
+npm run dev:web      # just the landing page, http://localhost:5173
+npm run dev:docs     # just the docs, http://localhost:5174
 npm test             # parser + tracker unit tests (vitest)
 npm run typecheck    # every workspace
 npm run check        # Biome lint + format check (Ultracite preset, see biome.jsonc)
@@ -99,8 +101,21 @@ apps/desktop        the Electron app (@repo/desktop)
   src/renderer      overlay.html (the HUD), settings.html (shadcn UI + calibrator),
                     capture.html (hidden: video stream → crops → change detection)
   src/shared        pure logic: OCR text parsing, EXP tracker, formatting (unit tested)
+apps/web            landing page (@repo/web): live demo + download button, Vite + React
+  src/demo          a simulated window.api, so the desktop Overlay and Settings components run in the browser
+apps/docs           documentation site (@repo/docs): Vite + React + MDX, pages in src/content/*.mdx
 packages/ui         shadcn components, cn() and the theme in src/styles/globals.css (@repo/ui)
 ```
+
+The web and docs apps build to static files (`npm run build` → `apps/web/dist`, `apps/docs/dist`) with
+relative paths and hash routing, so they can be hosted from any folder. They link to each other
+through `VITE_DOCS_URL` (web, default `./docs/`) and `VITE_WEB_URL` (docs, default `../`), which fits
+hosting the docs under `/docs/` of the site. The download button asks the GitHub API for the latest
+release's installer and falls back to the releases page. (The desktop app itself stays offline.)
+
+The web app renders the desktop renderer components directly (`@desktop/*`, `@shared/*` aliases), so
+changes to the overlay or settings window show up on the site too. Tailwind only scans the app being
+built, so `apps/web/src/site.css` adds the desktop renderer as a `@source`.
 
 Add shadcn components from the ui package so both the file and its dependencies land there:
 `cd packages/ui && npx shadcn@latest add dialog`. (Running it from `apps/desktop` writes the file to

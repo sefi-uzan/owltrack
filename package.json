@@ -14,6 +14,8 @@
     "build": "turbo run build",
     "check": "biome check",
     "dev": "turbo run dev",
+    "dev:docs": "turbo run dev --filter=@repo/docs",
+    "dev:web": "turbo run dev --filter=@repo/web",
     "dist": "turbo run dist --filter=@repo/desktop",
     "fix": "biome check --write",
     "test": "turbo run test",

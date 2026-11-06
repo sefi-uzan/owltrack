@@ -1,0 +1,40 @@
+# Calibration
+
+The **Calibrate** tab shows a frame from the game on the left and the regions on the right. The badge
+next to **Calibrate** in the sidebar counts how many of the three required regions are set.
+
+## Drawing a region
+
+Select a region in the list and drag a box on the frame. Boxes are stored relative to the game
+window, so they survive moving the window. If you change the game's resolution or UI scale, redraw
+them.
+
+- **Grab frame** takes a fresh picture of the game, e.g. after you moved the camera or closed a menu.
+- The zoom slider enlarges the frame so you can draw precisely.
+- The bin icon clears a region.
+
+## Thresholds
+
+OCR doesn't read the game's colours directly. Each region is turned into a black-and-white "text
+mask", and the threshold is the brightness cut-off between text and background. The preview under a
+region is exactly that mask.
+
+- Letters broken up or missing: **lower** the threshold.
+- Background showing up as black blobs: **raise** it.
+
+The defaults work for most setups. The name uses a low cut-off on purpose: thin strokes like the
+crossbar of an `f` disappear above ~120.
+
+## Fixing the character name
+
+OCR sometimes confuses look-alike letters in the game font (`f`/`t`, `l`/`I`). Fix the name once in
+**Overlay → Character name**, or hover the name on the overlay and click the pencil. The fix is stored
+for the spelling OCR detected, so it sticks for that character only.
+
+## Meso notices (experimental)
+
+Turn on **Count mesos** (the switch next to **Meso notices**, or in the Overlay tab) and draw a box
+around the "You have gained mesos (+52)" lines on the right of the screen.
+
+This is approximate: lines the OCR can't read cleanly are skipped, so it undercounts. EXP always comes
+from the status bar, never from notices, and item drops aren't tracked.

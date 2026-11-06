@@ -34,6 +34,8 @@ jobs:
         run: npm run typecheck
       - name: Test
         run: npm test
+      - name: Build web and docs
+        run: npx turbo run build --filter=@repo/web --filter=@repo/docs
 
   package-windows:
     name: Build, sign & package (Windows x64)
