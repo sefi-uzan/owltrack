@@ -25,7 +25,8 @@ export default defineConfig({
         input: {
           overlay: resolve(import.meta.dirname, 'src/renderer/overlay.html'),
           settings: resolve(import.meta.dirname, 'src/renderer/settings.html'),
-          capture: resolve(import.meta.dirname, 'src/renderer/capture.html')
+          capture: resolve(import.meta.dirname, 'src/renderer/capture.html'),
+          welcome: resolve(import.meta.dirname, 'src/renderer/welcome.html')
         }
       }
     }

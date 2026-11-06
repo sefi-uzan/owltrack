@@ -33,6 +33,8 @@ export interface Settings {
   /** Spelling fixes for OCR'd names, e.g. { "Ynsht": "Ynshf" } — OCR confuses f/t, l/I in the game font. */
   nameAliases: Record<string, string>
   overlay: OverlaySettings
+  /** The first-run welcome screen has been shown (and finished or dismissed). */
+  setupDone: boolean
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -43,7 +45,17 @@ export const DEFAULT_SETTINGS: Settings = {
   noticesEnabled: false,
   captureFps: 4,
   nameAliases: {},
-  overlay: { scale: 1, opacity: 1, locked: true, visible: true }
+  overlay: { scale: 1, opacity: 1, locked: true, visible: true },
+  setupDone: false
+}
+
+/** Windows integration that lives outside settings.json (registry, desktop). */
+export interface SystemOptions {
+  /** False when running from source: there's no installed exe to point Windows at. */
+  packaged: boolean
+  version: string
+  openAtLogin: boolean
+  desktopShortcut: boolean
 }
 
 export type CaptureState = 'idle' | 'searching' | 'starting' | 'streaming' | 'error'

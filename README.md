@@ -10,23 +10,24 @@ from the game window** and shows EXP gained in the last 5 minutes, EXP/hour, ses
 to next level.
 
 Electron + TypeScript, React + shadcn/ui (Tailwind v4), bundled with **electron-vite** (Vite 8) and
-packaged with **electron-builder** (NSIS installer + portable exe). OCR is Tesseract (WASM, offline).
+packaged with **electron-builder** (NSIS installer). OCR is Tesseract (WASM, offline).
 
 ## Install
 
 Download the latest release from [GitHub Releases](https://github.com/sefi-uzan/owltrack/releases/latest)
 (Windows 10/11, x64):
 
-- `OwlTrack-Setup-x.y.z.exe`: installer. Uninstall it from **Settings → Apps → Installed apps**
+- `OwlTrack-Setup-x.y.z.exe`: one-click installer (just for your Windows user, no admin needed). It
+  starts OwlTrack when done. Uninstall it from **Settings → Apps → Installed apps**
   (or "Add or remove programs"), like any other app.
-- `OwlTrack-Portable-x.y.z.exe`: runs without installing. To remove it, delete the exe.
 
 Settings and learned glyphs live in `%APPDATA%\OwlTrack`; delete that folder to remove them too.
 
 ## Using it
 
 1. Run the game **windowed or borderless** (an overlay can't sit on top of exclusive fullscreen).
-2. Start OwlTrack. The first time, the settings window opens on the **Calibrate** tab.
+2. Start OwlTrack. The first time, a welcome screen lets you turn on **Start with Windows** and a desktop
+   shortcut (also in Settings → Overlay → App), then opens the settings window on the **Calibrate** tab.
 3. If it doesn't find the game, type part of its window title or use **Pick window**.
 4. Click **Draw** next to each region, then drag a tight box around it on the frame:
    - **EXP numbers**: just `66.380[15.50%]`, without the `EXP` label
@@ -85,7 +86,7 @@ npm test             # parser + tracker unit tests (vitest)
 npm run typecheck    # every workspace
 npm run check        # Biome lint + format check (Ultracite preset, see biome.jsonc)
 npm run fix          # apply Biome's safe fixes and formatting
-npm run dist         # apps/desktop/dist/OwlTrack-Setup-x.y.z.exe and a portable exe
+npm run dist         # apps/desktop/dist/OwlTrack-Setup-x.y.z.exe
 npm run icons -w @repo/desktop   # regenerate build/icon.ico, resources/tray.png from assets/icon.svg
 ```
 

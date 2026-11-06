@@ -7,8 +7,19 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@repo/ui/components/ta
 import { cn } from '@repo/ui/lib/utils'
 import { compact, duration, grouped, signedCompact } from '@shared/format'
 import type { Settings as SettingsT, TrackerSnapshot, WindowSourceInfo } from '@shared/types'
-import { BarChart3, Crosshair, Eye, Gamepad2, MonitorUp, RotateCcw, ScanText, SlidersHorizontal } from 'lucide-react'
+import {
+  AppWindow,
+  BarChart3,
+  Crosshair,
+  Eye,
+  Gamepad2,
+  MonitorUp,
+  RotateCcw,
+  ScanText,
+  SlidersHorizontal
+} from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { useSystemOptions } from '../components/useSystemOptions'
 import { Calibrator, REQUIRED_REGIONS } from './Calibrator'
 import { Inset, Panel } from './Panel'
 
@@ -140,6 +151,29 @@ function NameRow({ settings, detected }: { settings: SettingsT; detected?: strin
   )
 }
 
+function AppPanel() {
+  const { options, setOpenAtLogin, setDesktopShortcut } = useSystemOptions()
+  const hint = options && !options.packaged ? 'Only in the installed app.' : undefined
+  return (
+    <Panel title="App" icon={<AppWindow />} bodyClassName="divide-y divide-white/[0.06] py-1">
+      <Row label="Start with Windows" hint={hint ?? 'Opens in the tray when you sign in.'}>
+        <Switch
+          checked={options?.openAtLogin ?? false}
+          disabled={!options?.packaged}
+          onCheckedChange={setOpenAtLogin}
+        />
+      </Row>
+      <Row label="Desktop shortcut" hint={hint}>
+        <Switch
+          checked={options?.desktopShortcut ?? false}
+          disabled={!options?.packaged}
+          onCheckedChange={setDesktopShortcut}
+        />
+      </Row>
+    </Panel>
+  )
+}
+
 function OverlayTab({ settings, snap }: { settings: SettingsT; snap: TrackerSnapshot | null }) {
   const o = settings.overlay
   return (
@@ -211,6 +245,8 @@ function OverlayTab({ settings, snap }: { settings: SettingsT; snap: TrackerSnap
           />
         </Row>
       </Panel>
+
+      <AppPanel />
     </div>
   )
 }

@@ -1,5 +1,9 @@
 appId: com.sefiuzan.owltrack
 productName: OwlTrack
+# The workspace package is @repo/desktop; per-user installs name their folder after this
+# (%LOCALAPPDATA%/Programs/owltrack). userData still follows productName (%APPDATA%/OwlTrack).
+extraMetadata:
+  name: owltrack
 directories:
   buildResources: build
   output: dist
@@ -29,12 +33,15 @@ win:
   target:
     - target: nsis
       arch: [ x64 ]
-    - target: portable
-      arch: [ x64 ]
 nsis:
-  oneClick: false
-  allowToChangeInstallationDirectory: true
+  # No wizard: install per-user with a progress bar, then launch the app, whose welcome screen
+  # (src/renderer/src/welcome) is the setup UI. build/installer.nsh adds uninstall cleanup.
+  oneClick: true
+  perMachine: false
+  runAfterFinish: true
+  createStartMenuShortcut: true
+  # Created on first install; updates keep it removed if the user turned it off in the app.
+  createDesktopShortcut: true
+  shortcutName: OwlTrack
   artifactName: ${productName}-Setup-${version}.${ext}
-portable:
-  artifactName: ${productName}-Portable-${version}.${ext}
 npmRebuild: false

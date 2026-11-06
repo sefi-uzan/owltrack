@@ -1,7 +1,7 @@
 import { join } from 'node:path'
 import { BrowserWindow, screen } from 'electron'
 
-export type Page = 'overlay' | 'settings' | 'capture'
+export type Page = 'overlay' | 'settings' | 'capture' | 'welcome'
 
 const preload = join(__dirname, '../preload/index.js')
 
@@ -66,6 +66,26 @@ export function createSettingsWindow(): BrowserWindow {
   win.setMenu(null)
   win.once('ready-to-show', () => win.show())
   load(win, 'settings')
+  return win
+}
+
+/** First-run screen shown after the one-click installer launches the app. */
+export function createWelcomeWindow(): BrowserWindow {
+  const win = new BrowserWindow({
+    title: 'OwlTrack — Welcome',
+    width: 560,
+    height: 520,
+    frame: false,
+    resizable: false,
+    maximizable: false,
+    fullscreenable: false,
+    show: false,
+    backgroundColor: '#141824',
+    webPreferences: { preload, sandbox: true }
+  })
+  win.setMenu(null)
+  win.once('ready-to-show', () => win.show())
+  load(win, 'welcome')
   return win
 }
 

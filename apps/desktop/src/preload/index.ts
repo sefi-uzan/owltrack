@@ -20,6 +20,11 @@ const api: Api = {
   takeSnapshot: () => ipcRenderer.invoke('capture:snapshot'),
   onRegionDebug: (cb) => on('debug:region', cb),
 
+  getSystemOptions: () => ipcRenderer.invoke('system:get'),
+  setOpenAtLogin: (enabled) => ipcRenderer.invoke('system:openAtLogin', enabled),
+  setDesktopShortcut: (enabled) => ipcRenderer.invoke('system:desktopShortcut', enabled),
+  finishSetup: (openSettings) => ipcRenderer.send('app:finishSetup', openSettings),
+
   openSettings: () => ipcRenderer.send('app:openSettings'),
   resizeOverlay: (w, h) => ipcRenderer.send('overlay:resize', w, h),
   setOverlayInteractive: (interactive) => ipcRenderer.send('overlay:interactive', interactive),

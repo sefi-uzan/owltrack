@@ -5,7 +5,7 @@ Releases are signed by [SignPath.io](https://signpath.io) with a certificate fro
 because the installers wrap the app exe and SignPath can't sign inside an NSIS installer:
 
 1. **`app`**: `OwlTrack.exe` is signed, then copied back into `win-unpacked/`.
-2. **`installers`**: the NSIS installer and portable exe are built around the signed exe
+2. **`installers`**: the NSIS installer is built around the signed exe
    (`electron-builder --prepackaged`) and signed.
 
 Each stage is a separate signing request, so a release needs **two approvals** in SignPath.

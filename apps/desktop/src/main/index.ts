@@ -9,7 +9,14 @@ import { app, BrowserWindow, desktopCapturer, globalShortcut, ipcMain, Menu, nat
 import { migrateLegacyUserData } from './migrate'
 import { OcrEngine } from './ocr'
 import { SettingsStore } from './store'
-import { createCaptureWindow, createOverlayWindow, createSettingsWindow, OVERLAY_WIDTH } from './windows'
+import { APP_ID, getSystemOptions, setDesktopShortcut, setOpenAtLogin } from './system'
+import {
+  createCaptureWindow,
+  createOverlayWindow,
+  createSettingsWindow,
+  createWelcomeWindow,
+  OVERLAY_WIDTH
+} from './windows'
 
 if (!app.requestSingleInstanceLock()) {
   app.quit()
@@ -26,6 +33,7 @@ let store: SettingsStore
 let overlay: BrowserWindow | null = null
 let capture: BrowserWindow | null = null
 let settingsWin: BrowserWindow | null = null
+let welcomeWin: BrowserWindow | null = null
 let tray: Tray | null = null
 let quitting = false
 let editingOverlay = false
@@ -310,6 +318,12 @@ function toggleVisible(): void {
 }
 
 function openSettings(): void {
+  // Still on the welcome screen: bring that back instead of skipping it.
+  if (welcomeWin && !welcomeWin.isDestroyed()) {
+    welcomeWin.show()
+    welcomeWin.focus()
+    return
+  }
   if (settingsWin && !settingsWin.isDestroyed()) {
     settingsWin.show()
     settingsWin.focus()
@@ -319,6 +333,24 @@ function openSettings(): void {
   settingsWin.on('closed', () => {
     settingsWin = null
   })
+}
+
+function openWelcome(): void {
+  welcomeWin = createWelcomeWindow()
+  // Closing it any other way (Alt+F4) counts as done too, so it's only ever shown once.
+  welcomeWin.on('closed', () => {
+    welcomeWin = null
+    if (quitting) return
+    if (!store.value.setupDone) store.update({ setupDone: true })
+    // Still needs calibrating: don't leave the user with an overlay that can't read anything.
+    if (openSettingsAfterWelcome || !store.value.regions.exp) openSettings()
+  })
+}
+
+let openSettingsAfterWelcome = false
+function finishSetup(thenOpenSettings: boolean): void {
+  openSettingsAfterWelcome = thenOpenSettings
+  if (welcomeWin && !welcomeWin.isDestroyed()) welcomeWin.close()
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -400,6 +432,16 @@ function registerIpc(): void {
   })
   ipcMain.on('capture:snapshotResult', (_e, jpeg: Uint8Array | null) => snapshotWaiter?.(jpeg))
   ipcMain.on('app:openSettings', openSettings)
+  ipcMain.on('app:finishSetup', (_e, thenOpenSettings: boolean) => finishSetup(Boolean(thenOpenSettings)))
+  ipcMain.handle('system:get', () => getSystemOptions())
+  ipcMain.handle('system:openAtLogin', (_e, on: boolean) => {
+    setOpenAtLogin(on)
+    return getSystemOptions()
+  })
+  ipcMain.handle('system:desktopShortcut', (_e, on: boolean) => {
+    setDesktopShortcut(on)
+    return getSystemOptions()
+  })
   // While locked the overlay is click-through, but mouse *moves* are still forwarded, so the
   // renderer can tell us when the pointer is over something clickable (the name's pencil).
   ipcMain.on('overlay:interactive', (_e, on: boolean) => {
@@ -435,7 +477,7 @@ function registerIpc(): void {
 app.on('second-instance', openSettings)
 
 app.whenReady().then(() => {
-  app.setAppUserModelId('com.sefiuzan.owltrack')
+  app.setAppUserModelId(APP_ID)
   migrateLegacyUserData()
   store = new SettingsStore()
   loadGlyphs()
@@ -490,7 +532,8 @@ app.whenReady().then(() => {
     if (store.value.overlay.visible || settingsWin) broadcast()
   }, 1000)
 
-  if (!store.value.regions.exp) openSettings()
+  if (!store.value.setupDone) openWelcome()
+  else if (!store.value.regions.exp) openSettings()
 })
 
 // Tray app: closing the settings window must not quit.

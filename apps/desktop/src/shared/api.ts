@@ -1,4 +1,12 @@
-import type { CaptureStatus, RegionDebug, RegionKey, Settings, TrackerSnapshot, WindowSourceInfo } from './types'
+import type {
+  CaptureStatus,
+  RegionDebug,
+  RegionKey,
+  Settings,
+  SystemOptions,
+  TrackerSnapshot,
+  WindowSourceInfo
+} from './types'
 
 export type SettingsPatch = Partial<Omit<Settings, 'overlay'>> & { overlay?: Partial<Settings['overlay']> }
 
@@ -18,6 +26,12 @@ export interface Api {
   /** JPEG data URL of the current game frame, or null if no frame arrived. */
   takeSnapshot: () => Promise<string | null>
   onRegionDebug: (cb: (d: RegionDebug) => void) => Unsubscribe
+
+  getSystemOptions: () => Promise<SystemOptions>
+  setOpenAtLogin: (on: boolean) => Promise<SystemOptions>
+  setDesktopShortcut: (on: boolean) => Promise<SystemOptions>
+  /** Close the welcome screen; `openSettings` continues to settings (Calibrate tab if not calibrated). */
+  finishSetup: (openSettings: boolean) => void
 
   openSettings: () => void
   resizeOverlay: (width: number, height: number) => void

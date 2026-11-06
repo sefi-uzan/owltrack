@@ -94,6 +94,28 @@ export function eraseBorders(d: Uint8ClampedArray, w: number, h: number): void {
   for (const x of cols) for (let y = 0; y < h; y++) white(x, y)
 }
 
+/** Bounding box of the black (text) pixels in an RGBA buffer, or undefined if there are none. */
+export function textBounds(
+  d: Uint8ClampedArray,
+  w: number,
+  h: number
+): { x: number; y: number; w: number; h: number } | undefined {
+  let x0 = w
+  let y0 = h
+  let x1 = -1
+  let y1 = -1
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      if (d[(y * w + x) * 4] !== 0) continue
+      if (x < x0) x0 = x
+      if (x > x1) x1 = x
+      if (y < y0) y0 = y
+      if (y > y1) y1 = y
+    }
+  }
+  return x1 < 0 ? undefined : { x: x0, y: y0, w: x1 - x0 + 1, h: y1 - y0 + 1 }
+}
+
 /**
  * Builds the image Tesseract sees: upscaled crop, thresholded to black text on white,
  * with a white margin (Tesseract misses glyphs touching the border).
@@ -123,6 +145,17 @@ export function renderForOcr(
     d[i + 3] = 255
   }
   eraseBorders(d, w, h)
+  // A couple of thin digits in a wide, mostly empty box (level "11") read as nothing at all:
+  // Tesseract drops them as noise. Cropped tight around the digits they read fine.
+  const crop = key === 'level' ? textBounds(d, w, h) : undefined
+  if (crop) {
+    target.width = crop.w + PAD * 2
+    target.height = crop.h + PAD * 2
+    ctx.fillStyle = '#fff'
+    ctx.fillRect(0, 0, target.width, target.height)
+    ctx.putImageData(img, PAD - crop.x, PAD - crop.y, crop.x, crop.y, crop.w, crop.h)
+    return target
+  }
   ctx.putImageData(img, PAD, PAD)
   return target
 }

@@ -9,16 +9,23 @@ import { createWorker, OEM, PSM, type Worker, type WorkerParams } from 'tesserac
 const unpacked = (p: string): string => p.replace(`app.asar${sep}`, `app.asar.unpacked${sep}`)
 const pkgDir = (name: string): string => unpacked(dirname(require.resolve(`${name}/package.json`)))
 
-type Kind = 'line' | 'block'
+type Kind = 'digits' | 'line' | 'block'
 
 const KIND: Record<RegionKey, Kind> = {
-  level: 'line',
+  level: 'digits',
   exp: 'line',
   name: 'block',
   notices: 'block'
 }
 
 const PARAMS: Record<Kind, Partial<WorkerParams>> = {
+  // Level tiles, cropped to the digits. Raw line skips layout analysis, which otherwise
+  // throws away isolated thin glyphs like the "1"s in "11".
+  digits: {
+    tessedit_pageseg_mode: PSM.RAW_LINE,
+    tessedit_char_whitelist: '0123456789',
+    user_defined_dpi: '300'
+  },
   // A single line of digits: level tiles, "66.380[15.50%]".
   line: {
     tessedit_pageseg_mode: PSM.SINGLE_LINE,

@@ -17,13 +17,16 @@ export class SettingsStore {
 
   private load(): Settings {
     try {
-      const raw = JSON.parse(readFileSync(this.file, 'utf8')) as Partial<Settings>
+      // trimStart() also drops a BOM (U+FEFF): Notepad/PowerShell can add one, and JSON.parse rejects it.
+      const raw = JSON.parse(readFileSync(this.file, 'utf8').trimStart()) as Partial<Settings>
       return {
         ...DEFAULT_SETTINGS,
         ...raw,
         thresholds: { ...DEFAULT_SETTINGS.thresholds, ...raw.thresholds },
         nameAliases: { ...raw.nameAliases },
-        overlay: { ...DEFAULT_SETTINGS.overlay, ...raw.overlay }
+        overlay: { ...DEFAULT_SETTINGS.overlay, ...raw.overlay },
+        // Settings from before the welcome screen existed: only show it if nothing was calibrated yet.
+        setupDone: raw.setupDone ?? Boolean(raw.regions?.exp)
       }
     } catch {
       return structuredClone(DEFAULT_SETTINGS)

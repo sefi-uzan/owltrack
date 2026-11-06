@@ -114,7 +114,7 @@ jobs:
         run: cp -f dist/signed-app/OwlTrack.exe dist/win-unpacked/OwlTrack.exe
 
       # --- Installers around the (signed) app ----------------------------------------------
-      - name: Build installer and portable exe
+      - name: Build the installer
         run: npx electron-builder --win --prepackaged dist/win-unpacked --publish never
 
       # --- Stage 2: sign the installers ------------------------------------------------------

@@ -13,7 +13,7 @@ OwlTrack: an always-on-top MapleStory EXP tracker overlay for Windows (Electron)
 
   Keep `package-lock.json` in sync (`npm version <patch|minor|major> -w @repo/desktop --no-git-tag-version`).
 - CI (`.github/workflows/ci.yml`) runs lint, typecheck and tests, packages the Windows x64 app, and on
-  `master` tags `v<version>` and publishes a GitHub release with the installer and portable exe. If the
+  `master` tags `v<version>` and publishes a GitHub release with the installer. If the
   version wasn't bumped, the tag already exists and no release is made.
 - Release builds are code-signed through SignPath (two manual approvals per release, see
   `.signpath/README.md`). Don't weaken that flow: SignPath Foundation's terms require binaries built
