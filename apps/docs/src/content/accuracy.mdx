@@ -4,9 +4,11 @@ The OCR can make errors. Thus, OwlTrack examines each value before it uses the v
 
 | Check | Description |
 | --- | --- |
-| EXP and % must agree | The EXP value and the percentage together give the EXP that is necessary for the level. A digit that the OCR read incorrectly gives a different result. OwlTrack then ignores the value. |
+| EXP and % must agree with the EXP table | OwlTrack knows the EXP that is necessary for each level in Classic World. When it reads your level, the EXP value must agree with the percentage for that level. A digit that the OCR read incorrectly gives a different result. |
+| One incorrect digit is corrected | If the EXP value does not agree, OwlTrack tries to change one digit. If only one change gives a value that agrees, OwlTrack uses that value. Otherwise, it ignores the value. |
+| No level, no table | If OwlTrack cannot read the level, or the EXP does not agree with that level, it calculates the necessary EXP from the EXP value and the percentage. This check is less accurate. |
 | Unusual values must show two times | OwlTrack must read the first value of a session two times before it uses it. The same rule applies when the EXP decreases. |
-| Decreases have a cause | When the EXP decreases, OwlTrack finds the cause. If the level increased or the EXP bar became empty, it is a **level-up**. Other decreases are a **death**, which OwlTrack counts as a loss. |
+| Decreases have a cause | When the EXP decreases, OwlTrack finds the cause. If the level increased, the EXP bar became empty, or the EXP agrees with the next level, it is a **level-up**. Other decreases are a **death**, which OwlTrack counts as a loss. |
 | The baseline corrects itself | If three values agree with each other but not with the baseline, OwlTrack resets the baseline. It does not count the difference as EXP. |
 
 ## If the values are not correct

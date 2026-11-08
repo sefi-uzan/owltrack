@@ -1,3 +1,4 @@
+import { expToNext, fitsTable } from './exp-table'
 import type { ExpReading } from './parse'
 
 const MIN = 60_000
@@ -56,10 +57,14 @@ export class Counter {
 export interface IngestResult {
   /** Ask the capture loop to OCR this region again on the next frame. */
   retry: boolean
+  /** The reading had a misread digit; this is the value the EXP table says it must have been. */
+  corrected?: ExpReading
 }
 
 interface Accepted extends ExpReading {
   required?: number
+  /** `required` comes from the EXP table (level known and the reading agrees with it). */
+  fromTable?: boolean
 }
 
 export function requiredFrom(r: ExpReading): number | undefined {
@@ -75,6 +80,42 @@ function consistent(a: number | undefined, b: number | undefined, percent: numbe
 
 const same = (a: ExpReading, b: ExpReading): boolean => a.exp === b.exp && a.percent === b.percent
 
+/** Every number one digit away from `n`: one digit changed, dropped or added. */
+export function oneDigitEdits(n: number): Set<number> {
+  const s = String(n)
+  const out = new Set<number>()
+  const add = (c: string): void => {
+    if (c && (c.length === 1 || c[0] !== '0')) out.add(Number(c))
+  }
+  for (let i = 0; i <= s.length; i++) {
+    if (i < s.length) add(s.slice(0, i) + s.slice(i + 1))
+    for (let d = 0; d <= 9; d++) {
+      add(s.slice(0, i) + d + s.slice(i))
+      if (i < s.length) add(s.slice(0, i) + d + s.slice(i + 1))
+    }
+  }
+  out.delete(n)
+  return out
+}
+
+/** Attach the required EXP: exact from the table when the reading fits it, else estimated. */
+function withRequired(r: ExpReading, level: number | undefined): Accepted {
+  const table = expToNext(level)
+  if (table !== undefined && fitsTable(r.exp, r.percent, table))
+    return { exp: r.exp, percent: r.percent, required: table, fromTable: true }
+  return { exp: r.exp, percent: r.percent, required: requiredFrom(r) }
+}
+
+/** A gain that fits the table, in a plausible range, one digit away from what we read. */
+function correctGain(r: ExpReading, prev: Accepted): Accepted | undefined {
+  const required = prev.required
+  if (!prev.fromTable || required === undefined || r.percent < prev.percent) return undefined
+  const fits = [...oneDigitEdits(r.exp)].filter(
+    (exp) => exp > prev.exp && exp - prev.exp <= required * 0.5 && fitsTable(exp, r.percent, required)
+  )
+  return fits.length === 1 ? { exp: fits[0], percent: r.percent, required, fromTable: true } : undefined
+}
+
 /** How long we wait for the level box to confirm a level-up after EXP drops. */
 const LEVEL_WAIT_MS = 4000
 
@@ -83,7 +124,11 @@ const LEVEL_WAIT_MS = 4000
  *
  * OCR is noisy, so every reading is sanity-checked: EXP and percentage must agree on the EXP
  * required for the level, drops in EXP must be seen twice, and a drop is classified as either a
- * level-up (level box went up, or the bar emptied) or a death penalty.
+ * level-up (level box went up, the bar emptied, or the EXP fits the next level) or a death penalty.
+ *
+ * When the level is known, the required EXP comes from the Classic World EXP table instead of being
+ * estimated from the rounded percentage. That check is exact, so a reading with one misread EXP
+ * digit can often be corrected: if exactly one one-digit edit fits the table, it is used.
  */
 export class ExpTracker {
   readonly exp = new Counter()
@@ -137,7 +182,7 @@ export class ExpTracker {
 
   ingestExp(r: ExpReading, t: number): IngestResult {
     this.tick(t)
-    const reading: Accepted = { ...r, required: requiredFrom(r) }
+    const reading = withRequired(r, this.level)
     const prev = this.accepted
 
     if (!prev) {
@@ -157,10 +202,24 @@ export class ExpTracker {
       return { retry: false }
     }
 
+    if (prev.fromTable && !reading.fromTable) {
+      const fixed = correctGain(r, prev)
+      if (fixed) {
+        this.candidate = undefined
+        this.accept(fixed)
+        this.exp.add(fixed.exp - prev.exp, t)
+        return { retry: false, corrected: { exp: fixed.exp, percent: fixed.percent } }
+      }
+    }
+
     const delta = r.exp - prev.exp
     if (delta > 0) {
       const plausibleSize = prev.required === undefined || delta <= prev.required * 0.5
-      if (consistent(reading.required, prev.required, r.percent) && r.percent >= prev.percent && plausibleSize) {
+      // Against the table only an exact fit counts; without it, compare the two estimates.
+      const agrees = prev.fromTable
+        ? reading.fromTable
+        : reading.fromTable || consistent(reading.required, prev.required, r.percent)
+      if (agrees && r.percent >= prev.percent && plausibleSize) {
         this.accept(reading)
         this.exp.add(delta, t)
         return { retry: false }
@@ -187,8 +246,15 @@ export class ExpTracker {
       this.creditLevelUp(prev, reading, t, true)
       return { retry: false }
     }
+    // Fits the next level's EXP but not this one's: a level-up the level box hasn't shown yet.
+    const next = expToNext(this.level === undefined ? undefined : this.level + 1)
+    if (prev.fromTable && !reading.fromTable && next !== undefined && fitsTable(r.exp, r.percent, next)) {
+      this.creditLevelUp(prev, reading, t, true)
+      return { retry: false }
+    }
     // A death keeps the level, so EXP and percentage must still agree with the same requirement.
-    if (!consistent(reading.required, prev.required, r.percent)) return this.reject(reading)
+    const keepsLevel = prev.fromTable ? reading.fromTable : consistent(reading.required, prev.required, r.percent)
+    if (!keepsLevel) return this.reject(reading)
     this.pendingDrop = { from: prev, to: reading, t }
     this.accept(reading)
     return { retry: false }
@@ -224,6 +290,7 @@ export class ExpTracker {
       this.clear()
     }
     this.level = level
+    if (this.accepted) this.accepted = withRequired(this.accepted, this.level)
     return { retry: false }
   }
 
@@ -232,7 +299,9 @@ export class ExpTracker {
     this.exp.add(remaining + to.exp, t)
     this.levelsGained++
     if (bumpLevel && this.level !== undefined) this.level++
-    if (!alreadyAccepted) this.accept(to)
+    // The new level has a new requirement; readings taken before we knew must be re-checked.
+    if (!alreadyAccepted) this.accept(withRequired(to, this.level))
+    else if (this.accepted) this.accepted = withRequired(this.accepted, this.level)
   }
 
   private accept(r: Accepted): void {

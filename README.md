@@ -5,7 +5,7 @@
 [Download](https://github.com/sefi-uzan/owltrack/releases/latest) ·
 [Code signing policy](#code-signing-policy) · [Privacy](#privacy) · [License](LICENSE)
 
-An always-on-top overlay for MapleStory that **reads your level, character name and EXP straight
+An always-on-top overlay for MapleStory Classic World that **reads your level, character name and EXP straight
 from the game window** and shows EXP gained in the last 5 minutes, EXP/hour, session total and time
 to next level.
 

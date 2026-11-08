@@ -8,6 +8,9 @@ describe('parseLevel', () => {
     expect(parseLevel('')).toBeUndefined()
     expect(parseLevel('0')).toBeUndefined()
     expect(parseLevel('1234')).toBeUndefined()
+    // Classic World caps at 100.
+    expect(parseLevel('101')).toBeUndefined()
+    expect(parseLevel('100')).toBe(100)
   })
 })
 

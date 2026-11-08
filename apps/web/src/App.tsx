@@ -207,8 +207,8 @@ export function App() {
               Your <span className="maple-title">EXP/hour</span>, always on screen.
             </h1>
             <p className="mt-5 max-w-xl text-lg leading-relaxed text-maple-muted">
-              OwlTrack is an always-on-top overlay for MapleStory. It reads your level and EXP straight from the game
-              window and tells you how fast you're levelling and when you'll hit the next one.
+              OwlTrack is an always-on-top overlay for MapleStory Classic World. It reads your level and EXP straight
+              from the game window and tells you how fast you're levelling and when you'll hit the next one.
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <DownloadButton release={release} />

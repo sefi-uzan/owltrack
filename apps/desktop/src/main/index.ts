@@ -226,8 +226,10 @@ async function handleRegion(key: RegionKey, png: Uint8Array): Promise<{ retry: b
   } else if (key === 'exp') {
     const r = parseExp(text)
     if (r) {
-      retry = tracker.ingestExp(r, t).retry
+      const result = tracker.ingestExp(r, t)
+      retry = result.retry
       parsed = `${r.exp.toLocaleString('en-US')} @ ${r.percent.toFixed(2)}%`
+      if (result.corrected) parsed += ` → ${result.corrected.exp.toLocaleString('en-US')} (EXP table)`
       const cur = tracker.current
       const accepted = cur?.exp === r.exp && cur.percent === r.percent
       if (accepted) {

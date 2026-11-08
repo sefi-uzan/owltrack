@@ -1,4 +1,5 @@
 import type { Api, SettingsPatch } from '@shared/api'
+import { expToNext } from '@shared/exp-table'
 import {
   DEFAULT_SETTINGS,
   type RegionDebug,
@@ -16,14 +17,14 @@ import { DEMO_REGIONS, FRAME, gameFrame, ocrMask } from './game-frame'
  */
 
 const TICK_MS = 1500
-/** EXP per kill in the demo; ~2400 kills/h puts the rate around 10B/h. */
-const KILL_EXP = 4_300_000
+/** EXP per kill in the demo; ~2000 kills/h puts the rate around 3.9M/h. */
+const KILL_EXP = 1900
 
 const START = {
-  level: 215,
-  required: 52_180_000_000,
-  exp: 43_270_000_000,
-  session: 7_412_000_000,
+  level: 64,
+  required: expToNext(64) ?? 0,
+  exp: 1_104_200,
+  session: 2_650_000,
   sessionSeconds: 42 * 60 + 17
 }
 
@@ -63,7 +64,7 @@ const state = {
 
 const startedAt = Date.now()
 const NAME = 'Owlbert'
-const JOB = 'Bishop'
+const JOB = 'Cleric'
 
 const settingsEvents = emitter<Settings>()
 const trackerEvents = emitter<TrackerSnapshot>()
@@ -122,7 +123,7 @@ function tick(): void {
       state.exp -= state.required
       state.level++
       state.levelsGained++
-      state.required = Math.round(state.required * 1.06)
+      state.required = expToNext(state.level) ?? state.required
     }
     emitDebug()
   }

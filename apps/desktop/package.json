@@ -1,6 +1,6 @@
 {
   "name": "@repo/desktop",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "private": true,
   "description": "OwlTrack: an always-on-top MapleStory EXP tracker overlay that reads your level, name and EXP from the game window.",
   "homepage": "https://github.com/sefi-uzan/owltrack",

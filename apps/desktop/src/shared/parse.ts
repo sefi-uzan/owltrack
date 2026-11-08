@@ -3,6 +3,8 @@
  * Everything here is pure so it can be unit-tested without Tesseract.
  */
 
+import { MAX_LEVEL } from './exp-table'
+
 export interface ExpReading {
   exp: number
   percent: number
@@ -19,7 +21,7 @@ export function parseLevel(text: string): number | undefined {
   const d = digitsOnly(text)
   if (!d || d.length > 3) return undefined
   const n = Number(d)
-  return n >= 1 && n <= 300 ? n : undefined
+  return n >= 1 && n <= MAX_LEVEL ? n : undefined
 }
 
 /**
